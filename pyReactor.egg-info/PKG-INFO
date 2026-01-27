@@ -1,0 +1,15 @@
+Metadata-Version: 2.4
+Name: pyReactor
+Version: 0.1
+Author: Hridoy Kabiraj
+Author-email: rudrokabiraj@gmail.com
+Requires-Python: >=3.6
+Requires-Dist: numpy>=1.20
+Requires-Dist: scipy>=1.6
+Requires-Dist: matplotlib>=3.3
+Requires-Dist: pyserial>=3.0
+Requires-Dist: wxPython>=4.1
+Dynamic: author
+Dynamic: author-email
+Dynamic: requires-dist
+Dynamic: requires-python

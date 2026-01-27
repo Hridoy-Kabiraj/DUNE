@@ -1,0 +1,2 @@
+[console_scripts]
+pyReactor = legoReactor:main
