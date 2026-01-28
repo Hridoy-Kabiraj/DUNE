@@ -4,8 +4,6 @@
 
 PyReactor is an advanced point kinetics nuclear reactor simulator with a graphical user interface (GUI) designed for educational purposes and reactor physics demonstrations. This package provides a comprehensive simulation environment that models nuclear reactor behavior, including neutronics, thermal hydraulics, and control systems.
 
-![Reactor GUI Screenshot](https://raw.githubusercontent.com/hridoy/DUNE/master/Reactor%20GUI%20Screenshot.png)
-
 ### Key Features
 
 - **Real-time Reactor Simulation**: Implements a 6-group delayed neutron precursor model based on point kinetics equations
