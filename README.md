@@ -1,8 +1,8 @@
-# PyReactor - Nuclear Reactor Simulator
+# DUNE - Nuclear Reactor Simulator
 
 ## About
 
-PyReactor is an advanced point kinetics nuclear reactor simulator with a graphical user interface (GUI) designed for educational purposes and reactor physics demonstrations. This package provides a comprehensive simulation environment that models nuclear reactor behavior, including neutronics, thermal hydraulics, and control systems.
+DUNE is an advanced point kinetics nuclear reactor simulator with a graphical user interface (GUI) designed for educational purposes and reactor physics demonstrations. This package provides a comprehensive simulation environment that models nuclear reactor behavior, including neutronics, thermal hydraulics, and control systems.
 
 ### Key Features
 
@@ -160,7 +160,7 @@ Documentation of an automatic SCRAM (Safety Control Rod Axe Man) event triggered
 
 ### Prerequisites
 
-PyReactor requires Python 3.6 or higher and the following dependencies:
+DUNE requires Python 3.6 or higher and the following dependencies:
 - **numpy** (≥1.20): Numerical computing and array operations
 - **scipy** (≥1.6): ODE solver for reactor kinetics equations
 - **matplotlib** (≥3.3): Plotting and data visualization
@@ -171,8 +171,8 @@ PyReactor requires Python 3.6 or higher and the following dependencies:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/wgurecky/pyReactor.git
-   cd pyReactor
+   git clone https://github.com/hridoy/DUNE.git
+   cd DUNE
    ```
 
 2. **Install in development mode**:
@@ -187,7 +187,7 @@ PyReactor requires Python 3.6 or higher and the following dependencies:
 
 3. **Verify installation**:
    ```bash
-   pyReactor --help
+   dune --help
    ```
 
 ### Arduino Setup (Optional)
@@ -205,7 +205,7 @@ For physical reactor model integration:
 
 Launch the reactor GUI with the command:
 ```bash
-pyReactor
+dune
 ```
 
 ### Operating Modes
@@ -471,7 +471,7 @@ This simulator has been used in:
 ## Frequently Asked Questions (FAQ)
 
 **Q: Is this simulator accurate for real reactor design?**  
-A: No. PyReactor uses simplified point kinetics and 0D thermal hydraulics suitable for education and conceptual understanding. Real reactor design requires detailed 3D neutronics and CFD analysis.
+A: No. DUNE uses simplified point kinetics and 0D thermal hydraulics suitable for education and conceptual understanding. Real reactor design requires detailed 3D neutronics and CFD analysis.
 
 **Q: Can I use this for homework/projects?**  
 A: Yes! The software is open source and free to use for educational purposes. Please cite this repository in your work.
@@ -530,7 +530,7 @@ For usage permissions or licensing inquiries, please contact the author.
 ## Contact and Support
 
 For questions, bug reports, or feature requests:
-- Open an issue on [GitHub](https://github.com/wgurecky/pyReactor/issues)
+- Open an issue on [GitHub](https://github.com/hridoy/DUNE/issues)
 - Email: rudrokabiraj@gmail.com
 
 For educational partnerships or collaboration inquiries, please reach out via email.
