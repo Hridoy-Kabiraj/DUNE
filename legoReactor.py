@@ -220,7 +220,7 @@ class CalcFrame(gui.MyFrame1):
                 rodWriteOut = 5.0
             elif rodWriteOut > 140.0:
                 rodWriteOut = 140.
-            self.ser.write("r" + str(rodWriteOut))
+            self.ser.write(("r" + str(rodWriteOut)).encode())
             time.sleep(0.1)  # arduino needs time to adjust motor position
 
             # compute output voltage to blue LED
@@ -230,13 +230,12 @@ class CalcFrame(gui.MyFrame1):
             normPwr = 250. * normPwr
             if normPwr >= 250:
                 normPwr = 250
-            self.ser.write("p" + str(int(normPwr)))
+            self.ser.write(("p" + str(int(normPwr))).encode())
             time.sleep(0.1)
 
             # send scram status to red RGB LED (stays on while scram is active)
             scramValue = 1 if self.legoReactor.scramToggle else 0
-            print("Sending SCRAM value: {}".format(scramValue))
-            self.ser.write("s" + str(int(scramValue)))
+            self.ser.write(("s" + str(int(scramValue))).encode())
             time.sleep(0.1)
 
     def exitSim(self, event):

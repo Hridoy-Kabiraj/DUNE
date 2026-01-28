@@ -132,6 +132,8 @@ class CalcFrame(gui.MyFrame1):
         self.axes1.plot(xdata, pwrdata, linewidth=2)
         self.axes2.set_ylabel('Fuel Temperature [K]')
         self.axes3.set_ylabel('Coolant Temperature [K]')
+        self.axes3.yaxis.set_label_position('right')
+        self.axes3.yaxis.tick_right()
         fuelPlot, = self.axes2.plot(xdata, fuelTdata, color='r', linewidth=2, label='Fuel T')
         coolPlot, = self.axes3.plot(xdata, coolTdata, color='b', linewidth=2, label='Coolant T')
         handles, labels = self.axes2.get_legend_handles_labels()

@@ -103,7 +103,7 @@ class MyFrame1 ( wx.Frame ):
 		self.fueltOut.SetMaxLength( 0 ) 
 		bSizer2.Add( self.fueltOut, 0, wx.ALL, 5 )
 		
-		self.m_staticText3 = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Fuel & Coolant Temp [K]", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText3 = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Fuel Temp [K]", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_staticText3.Wrap( -1 )
 		bSizer2.Add( self.m_staticText3, 0, wx.ALL, 5 )
 		
@@ -111,7 +111,7 @@ class MyFrame1 ( wx.Frame ):
 		self.cooltOut.SetMaxLength( 0 ) 
 		bSizer2.Add( self.cooltOut, 0, wx.ALL, 5 )
 		
-		self.m_staticText4 = wx.StaticText( self.m_panel4, wx.ID_ANY, u" ", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText4 = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Coolant Temp [K]", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_staticText4.Wrap( -1 )
 		bSizer2.Add( self.m_staticText4, 0, wx.ALL, 5 )
 		
