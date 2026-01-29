@@ -242,7 +242,7 @@ dune
 ### Operational Guidelines
 
 #### Safe Startup Procedure
-1. Verify coolant flow is adequate (default 1000 kg/s)
+1. Verify coolant flow is adequate (default 1800 kg/s)
 2. Slowly withdraw control rods (increase position from 0%)
 3. Watch reactivity approach zero dollars
 4. Continue rod withdrawal until desired power is reached
@@ -438,7 +438,6 @@ For comprehensive technical documentation, including detailed reactor physics de
 ## Publications and Presentations
 
 This simulator has been used in:
-- K-12 STEM outreach events
 - University reactor physics courses
 - Public science demonstrations
 - Nuclear engineering department open houses
@@ -515,7 +514,7 @@ A: It should work but may be slow. The GUI is computationally intensive. Conside
 
 **Hridoy Kabiraj**  
 Email: rudrokabiraj@gmail.com  
-GitHub: [@hridoy](https://github.com/hridoy)
+GitHub: [@hridoy](https://github.com/Hridoy-Kabiraj)
 
 **Original Developer: William Gurecky**
 
