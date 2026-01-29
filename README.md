@@ -102,9 +102,13 @@ The circuit diagram shows the complete wiring configuration for the Arduino-base
 
 The simulator solves the coupled point kinetics equations with 6 delayed neutron groups:
 
-$$\frac{dn}{dt} = \frac{\rho - \beta}{\Lambda}n + \sum_{i=1}^{6}\lambda_i C_i$$
+```math
+\frac{dn}{dt} = \frac{\rho - \beta}{\Lambda}n + \sum_{i=1}^{6}\lambda_i C_i
+```
 
-$$\frac{dC_i}{dt} = \frac{\beta_i}{\Lambda}n - \lambda_i C_i$$
+```math
+\frac{dC_i}{dt} = \frac{\beta_i}{\Lambda}n - \lambda_i C_i
+```
 
 Where:
 - $n$ = neutron population density
@@ -125,10 +129,14 @@ The total reactivity includes contributions from:
 ### Thermal Hydraulics
 
 Fuel temperature evolution:
-$$\frac{dT_f}{dt} = \frac{Q_{fission} - h \cdot A_c (T_f - T_c)}{m_f \cdot C_{p,fuel}}$$
+```math
+\frac{dT_f}{dt} = \frac{Q_{fission} - h \cdot A_c (T_f - T_c)}{m_f \cdot C_{p,fuel}}
+```
 
 Coolant temperature evolution:
-$$\frac{dT_c}{dt} = \frac{h \cdot A_c (T_f - T_c) + \dot{m}_c \cdot C_{p,coolant}(T_{in} - T_c)}{m_c \cdot C_{p,coolant}}$$
+```math
+\frac{dT_c}{dt} = \frac{h \cdot A_c (T_f - T_c) + \dot{m}_c \cdot C_{p,coolant}(T_{in} - T_c)}{m_c \cdot C_{p,coolant}}
+```
 
 Where:
 - $Q_{fission}$ = fission power generated
