@@ -129,7 +129,6 @@ The Arduino code provides physical feedback through:
 - `'r' + value (5-140)`: Rod position → Servo angle
 - `'s' + value (0-1)`: SCRAM state → Red LED on/off
 
-![Arduino Physical Setup](Images/Reactor%20Arduino%20Physical%20Setup.jpeg)
 
 **Circuit Diagram**:
 
@@ -200,7 +199,7 @@ Where:
 The DUNE simulator features a comprehensive full-screen interface with four synchronized real-time plots and extensive monitoring capabilities.
 
 ### Full-Screen 4-Panel GUI
-![Power Control Mode](Images/Power%20Control%20Mode.png)
+![GUI](Images/GUI.png)
 
 The main interface shows four synchronized plots:
 - **Upper Left Panel**: Real-time thermal power output (MW) vs time
@@ -217,6 +216,10 @@ The main interface shows four synchronized plots:
 - Adjustable time zoom for detailed transient analysis
 - Real-time numerical displays for all critical parameters
 - Synchronized x-axis across all plots for correlation analysis
+
+### Manual Power Control Mode
+![Power Control Mode](Images/Power%20Control%20Mode.png)
+Autometically adjust the control rod position through PID controller to achieve the targeted power level.
 
 ### Manual Flow Control Mode
 ![Flow Control Mode](Images/Flow%20Control%20Mode.png)
