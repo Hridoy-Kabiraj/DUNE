@@ -16,7 +16,7 @@ DUNE is an advanced point kinetics nuclear reactor simulator with a graphical us
 - **Safety Systems**: Automatic SCRAM functionality based on temperature setpoints
 - **Arduino Integration**: Interfaces with physical 3D printed reactor model for hands-on demonstrations
 - **CSV Data Logging**: Automatic timestamped data logging including poison concentrations
-- **Educational Tool**: Designed for K-12 outreach and nuclear engineering education
+- **Educational Tool**: Designed for nuclear engineering education
 
 ![3D Printed Reactor Physical Model](Images/Reactor%20Arduino%20Physical%20Setup.jpeg)
 
