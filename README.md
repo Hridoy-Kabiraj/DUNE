@@ -18,7 +18,7 @@ DUNE is an advanced point kinetics nuclear reactor simulator with a graphical us
 - **CSV Data Logging**: Automatic timestamped data logging including poison concentrations
 - **Educational Tool**: Designed for nuclear engineering education
 
-![3D Printed Reactor Physical Model](Images/Reactor%20Arduino%20Physical%20Setup.jpeg)
+![3D Printed Reactor Physical Model](Media/Images/Reactor%20Arduino%20Physical%20Setup.jpeg)
 
 ## Project Structure and Components
 
@@ -132,7 +132,7 @@ The Arduino code provides physical feedback through:
 
 **Circuit Diagram**:
 
-![Arduino Setup Circuit Diagram](Images/Arduino%20Setup%20Cricuit%20diagram.jpeg)
+![Arduino Setup Circuit Diagram](Media/Images/Arduino%20Setup%20Cricuit%20diagram.jpeg)
 
 The circuit diagram shows the complete wiring configuration for the Arduino-based physical reactor model, including:
 - Servo motor connections (Pin 9) for control rod actuation
@@ -199,7 +199,7 @@ Where:
 The DUNE simulator features a comprehensive full-screen interface with four synchronized real-time plots and extensive monitoring capabilities.
 
 ### Full-Screen 4-Panel GUI
-![GUI](Images/GUI.png)
+![GUI](Media/Images/GUI.png)
 
 The main interface shows four synchronized plots:
 - **Upper Left Panel**: Real-time thermal power output (MW) vs time
@@ -218,38 +218,70 @@ The main interface shows four synchronized plots:
 - Synchronized x-axis across all plots for correlation analysis
 
 ### Manual Power Control Mode
-![Power Control Mode](Images/Power%20Control%20Mode.png)
+![Power Control Mode](Media/Images/Power%20Control%20Mode.png)
 Autometically adjust the control rod position through PID controller to achieve the targeted power level.
 
 ### Manual Flow Control Mode
-![Flow Control Mode](Images/Flow%20Control%20Mode.png)
+![Flow Control Mode](Media/Images/Flow%20Control%20Mode.png)
 
 Independent coolant flow control enables investigation of thermal-hydraulic effects decoupled from automatic power-based control.
 
 ### Startup Transient
-![Reactor Startup - Exponential Power Rise](Images/Reactor%20Startup%20exponential%20power%20rise.png)
+![Reactor Startup - Exponential Power Rise](Media/Images/Reactor%20Startup%20exponential%20power%20rise.png)
 
 This image demonstrates a typical reactor startup sequence showing exponential power rise as control rods are withdrawn. The behavior follows the reactor period equation demonstrating subcritical to critical transition.
 
 ### Prompt Jump Phenomenon
-![Reactor Prompt Jump Transient](Images/Reactor%20Transient(Prompt%20Jump).png)
+![Reactor Prompt Jump Transient](Media/Images/Reactor%20Transient(Prompt%20Jump).png)
 
 This captures a reactivity insertion accident resulting in a prompt jump. When reactivity exceeds one dollar ($ρ > $1.00), the reactor becomes prompt critical, causing an instantaneous power jump followed by temperature feedback stabilization.
 
 ### SCRAM Event
-![Reactor SCRAM Event](Images/Reactor%20SCARM.png)
+![Reactor SCRAM Event](Media/Images/Reactor%20SCARM.png)
 
 Documentation of an automatic SCRAM (Safety Control Rod Axe Man) event triggered by exceeding temperature safety limits. Shows rapid power decrease as control rods are fully inserted and negative reactivity is added.
 
 ### Xenon and Samarium Poisoning
-![Xenon and Samarium Concentrations](Images/Xenon%20%26%20Samarium%20Poison%20Graph.png)
+![Xenon and Samarium Concentrations](Media/Images/Xenon%20%26%20Samarium%20Poison%20Graph.png)
 
 Long-term simulation showing fission product poison buildup:
 - **Xenon-135**: Reaches equilibrium in ~40-50 hours with characteristic oscillations
 - **Samarium-149**: Builds slowly over days, approaching stable equilibrium
 - Both poisons insert negative reactivity requiring compensating rod withdrawal
 
+## Video Demonstrations
 
+The following video demonstrations showcase the DUNE reactor simulator in action:
+
+### Reactor Start-Up
+[Media/Videos/Reactor Start-Up.webm](Media/Videos/Reactor%20Start-Up.webm)
+
+Demonstrates the complete reactor startup sequence with control rod withdrawal and exponential power rise.
+
+### Power Control Mode
+[Media/Videos/Power Control Mode.webm](Media/Videos/Power%20Control%20Mode.webm)
+
+Shows the automatic PID-based power control system maintaining setpoint power levels.
+
+### Coolant Flow Control Mode
+[Media/Videos/Coolant Flow Control Mode.webm](Media/Videos/Coolant%20Flow%20Control%20Mode.webm)
+
+Demonstrates manual coolant flow rate control and its effects on reactor temperatures.
+
+### Reactor SCRAM
+[Media/Videos/Reactor SCARM.webm](Media/Videos/Reactor%20SCARM.webm)
+
+Shows emergency shutdown procedure with automatic safety system activation.
+
+### Xenon-135 Negative Reactivity Effect at Start-Up
+[Media/Videos/Xenon-135 Negative Reactivity Effect at Start-Up.webm](Media/Videos/Xenon-135%20Negative%20Reactivity%20Effect%20at%20Start-Up.webm)
+
+Illustrates the transient xenon poisoning effects during reactor startup operations.
+
+### Data Collection in CSV
+[Media/Videos/Data Collection in CSV.webm](Media/Videos/Data%20Collection%20in%20CSV.webm)
+
+Demonstrates the automatic data logging system and CSV file generation for post-analysis.
 
 ## Installation
 
