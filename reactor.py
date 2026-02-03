@@ -32,8 +32,8 @@ class DUNEReactor(object):
         self.t = np.array([0, self.tstep])
         self.hrate = 0.0  # rod movement rate [% / s]
         self.rodSetPoint = 0.0  # initial rod setpoint [%]
-        self.mdotC = 1000.e3  # coolant flow rate [g / s]
-        self.coolantSetPoint = 1000.e3
+        self.mdotC = 200.e3  # coolant flow rate [g / s]
+        self.coolantSetPoint = 200.e3
         self.pwrCtrl = False
         self.coolantCtrl = False
         self.scramToggle = False
