@@ -3,9 +3,9 @@
 from setuptools import setup
 
 setup(
-    name="pyReactor",
+    name="DUNE",
     version="0.1",
-    py_modules=["reactor", "reactorPhysics", "legoReactor", "guiTemplate"],
+    py_modules=["reactor", "reactorPhysics", "DUNEReactor", "guiTemplate"],
     install_requires=[
         "numpy>=1.20",
         "scipy>=1.6",
@@ -19,7 +19,7 @@ setup(
     python_requires=">=3.6",
     entry_points={
         "console_scripts": [
-            "pyReactor = legoReactor:main",
+            "DUNE = DUNEReactor:main",
         ],
     },
 )

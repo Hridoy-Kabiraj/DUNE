@@ -17,7 +17,7 @@ import wx.xrc
 class MyFrame1 ( wx.Frame ):
 	
 	def __init__( self, parent ):
-		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 1000,800 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 1920,1080 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 		
 		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
 		
@@ -58,6 +58,9 @@ class MyFrame1 ( wx.Frame ):
 		self.m_staticText12.Wrap( -1 )
 		bSizer1.Add( self.m_staticText12, 0, wx.ALL, 5 )
 		
+		self.coolantbox = wx.CheckBox( self.m_panel1, wx.ID_ANY, u"Flow Ctrl", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer1.Add( self.coolantbox, 0, wx.ALL, 5 )
+		
 		self.m_staticline2 = wx.StaticLine( self.m_panel1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
 		bSizer1.Add( self.m_staticline2, 0, wx.EXPAND |wx.ALL, 5 )
 		
@@ -76,7 +79,7 @@ class MyFrame1 ( wx.Frame ):
 		self.m_panel1.Layout()
 		fgSizer1.Add( self.m_panel1, 0, wx.ALL|wx.EXPAND, 5 )
 		
-		self.m_panel4 = wx.Panel( self, wx.ID_ANY, wx.Point( -1,-1 ), wx.Size( 150,-1 ), wx.TAB_TRAVERSAL )
+		self.m_panel4 = wx.Panel( self, wx.ID_ANY, wx.Point( -1,-1 ), wx.Size( 220,-1 ), wx.TAB_TRAVERSAL )
 		bSizer2 = wx.BoxSizer( wx.VERTICAL )
 		
 		self.m_staticText8 = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Plot Zoom", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -115,6 +118,22 @@ class MyFrame1 ( wx.Frame ):
 		self.m_staticText4.Wrap( -1 )
 		bSizer2.Add( self.m_staticText4, 0, wx.ALL, 5 )
 		
+		self.xenonOut = wx.TextCtrl( self.m_panel4, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.xenonOut.SetMaxLength( 0 ) 
+		bSizer2.Add( self.xenonOut, 0, wx.ALL, 5 )
+		
+		self.m_staticText12 = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Xe-135\n[atoms/cm\u00b3]", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText12.Wrap( -1 )
+		bSizer2.Add( self.m_staticText12, 0, wx.ALL, 5 )
+		
+		self.samariumOut = wx.TextCtrl( self.m_panel4, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.samariumOut.SetMaxLength( 0 ) 
+		bSizer2.Add( self.samariumOut, 0, wx.ALL, 5 )
+		
+		self.m_staticText13 = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Sm-149\n[atoms/cm\u00b3]", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText13.Wrap( -1 )
+		bSizer2.Add( self.m_staticText13, 0, wx.ALL, 5 )
+		
 		self.m_staticline14 = wx.StaticLine( self.m_panel4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
 		bSizer2.Add( self.m_staticline14, 0, wx.EXPAND |wx.ALL, 5 )
 		
@@ -135,7 +154,7 @@ class MyFrame1 ( wx.Frame ):
 		self.m_panel4.Layout()
 		fgSizer1.Add( self.m_panel4, 1, wx.EXPAND |wx.ALL, 5 )
 		
-		self.m_panel2 = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.Size( 600,800 ), wx.TAB_TRAVERSAL )
+		self.m_panel2 = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.Size( 1600,1060 ), wx.TAB_TRAVERSAL )
 		fgSizer1.Add( self.m_panel2, 1, wx.EXPAND |wx.ALL, 5 )
 		
 		
@@ -157,6 +176,7 @@ class MyFrame1 ( wx.Frame ):
 		self.pwrSetPt.Bind( wx.EVT_TEXT_ENTER, self.setReactorPwr )
 		self.pwrbox.Bind( wx.EVT_CHECKBOX, self.pwrCtrlON )
 		self.coolantBox.Bind( wx.EVT_TEXT_ENTER, self.coolantSet )
+		self.coolantbox.Bind( wx.EVT_CHECKBOX, self.coolantCtrlON )
 		self.rodSetPt.Bind( wx.EVT_TEXT_ENTER, self.setRodPos )
 		self.rodSlide.Bind( wx.EVT_SCROLL, self.rodSlideSet )
 		self.plotZoom.Bind( wx.EVT_SCROLL, self.setPlotZoom )
@@ -180,6 +200,9 @@ class MyFrame1 ( wx.Frame ):
 		event.Skip()
 	
 	def coolantSet( self, event ):
+		event.Skip()
+	
+	def coolantCtrlON( self, event ):
 		event.Skip()
 	
 	def setRodPos( self, event ):

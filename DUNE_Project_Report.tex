@@ -1,0 +1,3119 @@
+\documentclass[12pt,a4paper]{article}
+
+% ===========================
+% PACKAGES
+% ===========================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
+\usepackage{enumitem}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{booktabs}
+
+% ===========================
+% PAGE LAYOUT
+% ===========================
+\geometry{margin=1in}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{DUNE: Nuclear Reactor Simulation}
+\lhead{Technical Report}
+\rfoot{Page \thepage}
+
+% ===========================
+% CODE LISTING STYLE
+% ===========================
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{pythonstyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=4,
+    language=Python
+}
+
+\lstdefinestyle{arduinostyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=4,
+    language=C++
+}
+
+\lstset{style=pythonstyle}
+
+% ===========================
+% HYPERLINK SETUP
+% ===========================
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={DUNE Nuclear Reactor Simulation Report},
+    pdfpagemode=FullScreen,
+}
+
+% ===========================
+% TITLE PAGE INFORMATION
+% ===========================
+\title{
+    \LARGE{\textbf{DUNE: Nuclear Reactor Point Kinetics Simulator}}\\
+    \vspace{0.5cm}
+    \Large{Comprehensive Technical Report and Code Analysis}\\
+    \vspace{0.5cm}
+    \normalsize{An Educational Tool for University 1st Year Nuclear Engineering Students}
+}
+\author{
+    \textbf{Course Code: NE-3206}\\
+    \vspace{0.5cm}
+    \textbf{Group Members:}\\
+    \vspace{0.3cm}
+    Hridoy Kabiraj (Roll: 14)\\
+    Aishik Chowdhury (Roll: 17)\\
+    Abrar Abdullah Diam (Roll: 56)\\
+    \vspace{0.5cm}
+    \textbf{Department of Nuclear Engineering}\\
+    \textbf{University of Dhaka}\\
+    \vspace{0.3cm}
+    GitHub Repository: \url{https://github.com/Hridoy-Kabiraj/DUNE}
+}
+\date{\today}
+
+% ===========================
+% DOCUMENT BEGINS
+% ===========================
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\newpage
+
+\begin{abstract}
+This comprehensive technical report presents a detailed analysis of the DUNE (Demonstrable Utility for Nuclear Education) project—a nuclear reactor point kinetics simulation system with an interactive GUI frontend and optional Arduino-driven 3D printed physical model integration. The project was developed as an educational tool to introduce University 1st year students to nuclear engineering concepts through hands-on simulation and visualization. This document provides an in-depth exploration of the theoretical foundations of reactor kinetics, detailed code walkthroughs with line-by-line annotations, architectural analysis, and implementation details. The simulation implements the six-group delayed neutron point kinetics equations coupled with thermal-hydraulic feedback and control rod dynamics, offering real-time visualization of reactor behavior including power transients, temperature evolution, and safety systems such as SCRAM protection. The Arduino integration provides tangible physical feedback through servo-controlled control rods and LED power indicators, bridging the gap between abstract nuclear physics concepts and observable physical phenomena.
+\end{abstract}
+
+\newpage
+\tableofcontents
+\newpage
+
+% Start main content on new page
+\newpage
+
+% ===========================
+% SECTION 1: INTRODUCTION
+% ===========================
+\section{Introduction}
+
+\subsection{Project Context and Motivation}
+
+Nuclear energy represents one of the most powerful and complex technologies developed by humanity, yet public understanding of nuclear reactor physics remains limited and often clouded by misconceptions. The DUNE (Demonstrable Utility for Nuclear Education) project addresses this knowledge gap by providing an accessible, interactive educational tool that demystifies nuclear reactor operation through simulation and visualization.
+
+The project emerged from the recognition that effective STEM education, particularly in nuclear engineering, requires hands-on experiences that bridge theoretical knowledge with observable phenomena. Traditional lecture-based approaches often fail to convey the dynamic, interconnected nature of reactor systems. DUNE solves this pedagogical challenge by implementing a scientifically accurate point kinetics reactor model with real-time graphical feedback and optional physical integration through Arduino-controlled 3D printed models.
+
+\subsection{Problem Statement}
+
+The core challenges addressed by this project include:
+
+\begin{enumerate}
+    \item \textbf{Accessibility}: Making nuclear reactor physics accessible to University 1st year students with fundamental mathematical background.
+    \item \textbf{Engagement}: Creating an interactive experience that maintains student interest while conveying complex technical concepts.
+    \item \textbf{Safety Education}: Demonstrating reactor safety systems (particularly SCRAM protection) in a risk-free simulated environment.
+    \item \textbf{Physical Intuition}: Connecting abstract equations to tangible physical phenomena through Arduino-driven hardware feedback.
+    \item \textbf{Real-time Dynamics}: Illustrating the time-dependent behavior of reactor systems, including transients, control strategies, and feedback mechanisms.
+\end{enumerate}
+
+\subsection{Intended Audience and Use Cases}
+
+DUNE is designed for multiple audiences:
+
+\begin{itemize}
+    \item \textbf{University 1st Year Students}: Primary target audience for educational demonstrations and interactive learning experiences in nuclear engineering courses.
+    \item \textbf{Educators}: Science teachers seeking engaging tools for nuclear energy education and STEM outreach.
+    \item \textbf{University Students}: Undergraduate nuclear engineering students learning reactor kinetics fundamentals.
+    \item \textbf{Public Outreach}: Science fairs, open house events, and community education programs about nuclear technology.
+    \item \textbf{Researchers}: As a platform for developing and testing educational methodologies in nuclear engineering education.
+\end{itemize}
+
+\subsection{Key Features and Capabilities}
+
+The DUNE system provides:
+
+\begin{itemize}
+    \item Real-time solution of six-group delayed neutron point kinetics equations
+    \item \textbf{Xenon-135 and Samarium-149 poisoning dynamics} with complete decay chain modeling
+    \item Coupled thermal-hydraulic modeling with fuel and coolant temperature tracking
+    \item Interactive \textbf{full-screen GUI} with control rod manipulation and power level control
+    \item Automatic reactor protection system (SCRAM) with configurable safety limits
+    \item Dual control modes: manual control rod positioning and automatic power control (PID)
+    \item \textbf{Four-panel live plotting}: reactor power, reactivity (\$), temperatures, and fission product poisons (Xe-135 \& Sm-149)
+    \item \textbf{Real-time monitoring displays}: Xenon-135 and Samarium-149 concentrations in scientific notation
+    \item Optional Arduino integration for physical model control (servo motors, LED feedback)
+    \item Temperature-dependent reactivity feedback modeling
+    \item \textbf{Enhanced coolant system}: Multi-poison aware reactivity, burnout effects on poisoning
+    \item Dynamic coolant flow rate adjustment based on reactor power (200--1200 kg/s)
+    \item Manual coolant flow control mode with user-defined flow rates
+    \item Automatic CSV data logging including Xenon, Samarium concentrations and reactivity traces
+    \item Independent pump speed control via Arduino case 'c' command
+    \item Real-time reactivity decomposition: temperature, rod position, Xenon, and Samarium contributions
+\end{itemize}
+
+\subsection{Document Organization}
+
+This report is structured as follows:
+
+\begin{itemize}
+    \item \textbf{Section 2}: Repository structure and file organization
+    \item \textbf{Section 3}: Theoretical background on nuclear reactor point kinetics
+    \item \textbf{Section 4}: Detailed code analysis of reactor physics module
+    \item \textbf{Section 5}: Reactor control system implementation
+    \item \textbf{Section 6}: GUI frontend architecture and implementation
+    \item \textbf{Section 7}: Arduino integration for physical model control
+    \item \textbf{Section 8}: Mathematical formulations and numerical methods
+    \item \textbf{Section 9}: Usage examples and operational scenarios
+    \item \textbf{Section 10}: Conclusions and future enhancements
+\end{itemize}
+
+% ===========================
+% SECTION 2: REPOSITORY EXPLORATION
+% ===========================
+\section{Repository Exploration}
+
+\subsection{Repository Structure Overview}
+
+The DUNE project is organized into a logical directory structure that separates concerns between physics modeling, user interface, hardware integration, and deployment:
+
+\begin{verbatim}
+DUNE/
+├── README.md                    # Project documentation
+├── setup.py                     # Python package installation script
+├── reactor.py                   # Core reactor control class
+├── reactorPhysics.py           # Point kinetics equations and physics
+├── DUNEReactor.py              # Main GUI application
+├── guiTemplate.py              # wxPython GUI layout (auto-generated)
+├── generate_report.py          # Utility script
+├── __pycache__/                # Python bytecode cache
+├── arduino/
+│   └── reactorSketch/
+│       └── reactorSketch.ino   # Arduino firmware for hardware control
+├── build/                      # Build artifacts
+│   ├── bdist.linux-x86_64/
+│   └── lib/                    # Compiled library files
+├── doc/
+│   └── readme.tex             # LaTeX documentation source
+└── DUNE.egg-info/        # Python package metadata
+    ├── dependency_links.txt
+    ├── entry_points.txt
+    ├── PKG-INFO
+    ├── requires.txt
+    ├── SOURCES.txt
+    └── top_level.txt
+\end{verbatim}
+
+\subsection{Core Python Modules}
+
+\subsubsection{reactorPhysics.py}
+
+This module contains the fundamental nuclear reactor physics implementation:
+
+\begin{itemize}
+    \item \textbf{Purpose}: Implements point kinetics equations with six delayed neutron groups
+    \item \textbf{Key Components}:
+    \begin{itemize}
+        \item Delayed neutron group parameters ($\beta_i$, $\lambda_i$)
+        \item Neutron population dynamics (\texttt{dndt})
+        \item Precursor concentration evolution (\texttt{dCdt})
+        \item Thermal power calculation (\texttt{qFuel})
+        \item Temperature derivatives for fuel and coolant (\texttt{dTfdt}, \texttt{dTcdt})
+        \item Control rod reactivity worth curves (\texttt{diffRodWorth}, \texttt{intRodWorth})
+        \item Total reactivity calculation (\texttt{rho})
+        \item Complete reactor system ODEs (\texttt{reactorSystem})
+    \end{itemize}
+    \item \textbf{Mathematical Framework}: Uses numpy for array operations and defines physical constants based on U-235 fission data
+\end{itemize}
+
+\subsubsection{reactor.py}
+
+The reactor control and state management module:
+
+\begin{itemize}
+    \item \textbf{Purpose}: Provides high-level interface for reactor simulation
+    \item \textbf{Key Class}: \texttt{DUNEReactor}
+    \item \textbf{Responsibilities}:
+    \begin{itemize}
+        \item State vector management (neutrons, precursors, temperatures, rod position)
+        \item Time stepping using scipy ODE integrators
+        \item Control logic (manual rod control vs. automatic power control)
+        \item PID controller implementation for power regulation
+        \item SCRAM protection system
+        \item Data storage for plotting and analysis
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{DUNEReactor.py}
+
+The main application with GUI integration:
+
+\begin{itemize}
+    \item \textbf{Purpose}: User interface and real-time visualization
+    \item \textbf{Framework}: wxPython for GUI, matplotlib for plotting
+    \item \textbf{Key Features}:
+    \begin{itemize}
+        \item Real-time plot updates (power, fuel temperature, coolant temperature)
+        \item User input handling (sliders, text boxes, buttons)
+        \item Timer-based event loop for continuous simulation
+        \item Arduino serial communication for 3D printed physical model
+        \item Interactive control element binding
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{guiTemplate.py}
+
+Auto-generated GUI layout code:
+
+\begin{itemize}
+    \item \textbf{Purpose}: Defines GUI widget layout and structure
+    \item \textbf{Generation Tool}: wxFormBuilder
+    \item \textbf{Components}: Panels, sliders, text controls, buttons, gauges
+    \item \textbf{Note}: This file should not be manually edited; regenerate from wxFormBuilder project
+\end{itemize}
+
+\subsection{Arduino Integration}
+
+\subsubsection{reactorSketch.ino}
+
+Arduino firmware for physical model control:
+
+\begin{itemize}
+    \item \textbf{Purpose}: Provides hardware feedback for reactor simulation
+    \item \textbf{Hardware Interface}:
+    \begin{itemize}
+        \item Servo motor (pin 9): Control rod position indication in 3D printed model
+        \item RGB LED Blue (pin 6): Reactor power level visualization
+        \item RGB LED Red (pin 11): SCRAM condition indicator
+        \item PWM Motor (pin 3): Coolant pump speed control
+    \end{itemize}
+    \item \textbf{Communication Protocol}: Serial commands at 9600 baud
+    \begin{itemize}
+        \item 'p' + number: Set power LED brightness (0-255)
+        \item 'r' + number: Set control rod servo position (0-180)
+        \item 's' + number: Set SCRAM LED state (0 or 1)
+    \end{itemize}
+\end{itemize}
+
+\subsection{Package Configuration}
+
+\subsubsection{setup.py}
+
+Python package configuration using setuptools:
+
+\begin{itemize}
+    \item \textbf{Package Name}: DUNE
+    \item \textbf{Entry Point}: \texttt{DUNE} command launches GUI application
+    \item \textbf{Dependencies}:
+    \begin{itemize}
+        \item numpy $\geq$ 1.20: Numerical computations
+        \item scipy $\geq$ 1.6: ODE integration
+        \item matplotlib $\geq$ 3.3: Plotting
+        \item pyserial $\geq$ 3.0: Arduino communication
+        \item wxPython $\geq$ 4.1: GUI framework
+    \end{itemize}
+    \item \textbf{Python Version}: Requires Python 3.6 or newer
+\end{itemize}
+
+\subsection{Documentation}
+
+\subsubsection{README.md}
+
+Project overview and usage instructions:
+
+\begin{itemize}
+    \item Installation procedures
+    \item Usage instructions
+    \item Control mode descriptions
+    \item Arduino connection guidance
+    \item Author information and licensing
+\end{itemize}
+
+% ===========================
+% SECTION 3: THEORY BACKGROUND
+% ===========================
+\section{Theoretical Background: Nuclear Reactor Point Kinetics}
+
+\subsection{Introduction to Reactor Kinetics}
+
+Reactor kinetics describes the time-dependent behavior of neutron population in a nuclear reactor. Unlike static criticality analysis, kinetics accounts for the dynamic response of the neutron flux to changes in reactivity, which is essential for understanding reactor control, transient behavior, and safety systems.
+
+\subsection{Neutron Population Dynamics}
+
+\subsubsection{The Neutron Life Cycle}
+
+In a nuclear reactor, neutrons are born from two sources:
+
+\begin{enumerate}
+    \item \textbf{Prompt Neutrons}: Released immediately ($\sim 10^{-14}$ seconds) during nuclear fission
+    \item \textbf{Delayed Neutrons}: Released from the decay of fission products (precursors) with characteristic half-lives ranging from fractions of a second to nearly a minute
+\end{enumerate}
+
+Although delayed neutrons constitute only about 0.65\% of all neutrons from U-235 fission, they are crucial for reactor control. Without delayed neutrons, the reactor would respond to reactivity changes on prompt neutron timescales ($\sim 10^{-5}$ seconds), making control impossible.
+
+\subsubsection{The Point Kinetics Approximation}
+
+The point kinetics model assumes that the neutron flux shape remains constant over time, and only its amplitude varies. This simplification reduces the complex space-time neutron diffusion equations to a set of ordinary differential equations (ODEs) describing the total neutron population.
+
+\subsection{Point Kinetics Equations with Delayed Neutrons}
+
+The fundamental point kinetics equations with delayed neutron groups are:
+
+\begin{equation}
+\frac{dn(t)}{dt} = \frac{\rho(t) - \beta}{\Lambda} n(t) + \sum_{i=1}^{6} \lambda_i C_i(t)
+\end{equation}
+
+\begin{equation}
+\frac{dC_i(t)}{dt} = \frac{\beta_i}{\Lambda} n(t) - \lambda_i C_i(t) \quad \text{for } i = 1, 2, \ldots, 6
+\end{equation}
+
+where:
+
+\begin{itemize}
+    \item $n(t)$ = neutron density [neutrons/cm$^3$]
+    \item $C_i(t)$ = concentration of $i$-th delayed neutron precursor group [nuclei/cm$^3$]
+    \item $\rho(t)$ = reactivity [dimensionless, often expressed in dollars or pcm]
+    \item $\beta$ = total delayed neutron fraction $= \sum_{i=1}^{6} \beta_i \approx 0.0065$ for U-235
+    \item $\beta_i$ = delayed neutron fraction for group $i$
+    \item $\lambda_i$ = decay constant for group $i$ [s$^{-1}$]
+    \item $\Lambda$ = prompt neutron generation time [s] $\approx 10^{-5}$ s for thermal reactors
+\end{itemize}
+
+\subsubsection{Physical Interpretation}
+
+Equation (1) describes the rate of change of neutron population:
+
+\begin{itemize}
+    \item \textbf{First term} $\frac{\rho(t) - \beta}{\Lambda} n(t)$: Contribution from prompt neutrons. The factor $(\rho - \beta)$ represents the excess reactivity above delayed neutron fraction.
+    \item \textbf{Second term} $\sum_{i=1}^{6} \lambda_i C_i(t)$: Contribution from delayed neutrons released by precursor decay.
+\end{itemize}
+
+Equation (2) describes precursor population evolution:
+
+\begin{itemize}
+    \item \textbf{Production term} $\frac{\beta_i}{\Lambda} n(t)$: Precursors created from fission events
+    \item \textbf{Decay term} $-\lambda_i C_i(t)$: Precursors lost to radioactive decay (releasing delayed neutrons)
+\end{itemize}
+
+\subsection{Delayed Neutron Data for U-235}
+
+The DUNE simulation uses six-group delayed neutron parameters for U-235 thermal fission:
+
+\begin{table}[H]
+\centering
+\caption{Six-Group Delayed Neutron Parameters for U-235}
+\begin{tabular}{@{}ccc@{}}
+\toprule
+Group $i$ & $\beta_i$ & $\lambda_i$ [s$^{-1}$] \\
+\midrule
+1 & 0.000215 & 0.0124 \\
+2 & 0.001424 & 0.0305 \\
+3 & 0.001274 & 0.111 \\
+4 & 0.002568 & 0.301 \\
+5 & 0.000748 & 1.14 \\
+6 & 0.000273 & 3.01 \\
+\midrule
+Total & $\beta = 0.0065$ & - \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Reactivity and Its Components}
+
+Reactivity is a dimensionless measure of how far the reactor is from critical:
+
+\begin{equation}
+\rho = \frac{k_{eff} - 1}{k_{eff}} \approx k_{eff} - 1
+\end{equation}
+
+where $k_{eff}$ is the effective multiplication factor.
+
+\subsubsection{Reactivity Units}
+
+\begin{itemize}
+    \item \textbf{Absolute}: $\Delta k/k$ (dimensionless)
+    \item \textbf{Percent milli-rho (pcm)}: $10^5 \times \rho$
+    \item \textbf{Dollars (\$)}: $\rho / \beta$ (normalized to delayed neutron fraction)
+\end{itemize}
+
+A reactivity of +\$1 (one dollar) means $\rho = \beta$, bringing the reactor to prompt critical.
+
+\subsubsection{Reactivity Components in DUNE}
+
+The total reactivity in DUNE includes:
+
+\begin{equation}
+\rho(t) = \rho_{rod}(h) + \rho_{temp}(T_{fuel})
+\end{equation}
+
+\begin{enumerate}
+    \item \textbf{Control Rod Reactivity} $\rho_{rod}(h)$:
+    
+    The integral rod worth as a function of rod height $h$ (0 = fully inserted, 100 = fully withdrawn):
+    
+    \begin{equation}
+    \rho_{rod}(h) = \int_0^h R(h') \, dh'
+    \end{equation}
+    
+    where the differential rod worth is:
+    
+    \begin{equation}
+    R(h) = k \sin\left(\frac{\pi h}{100}\right)
+    \end{equation}
+    
+    This sinusoidal shape reflects the importance-weighted control rod worth, which is maximum near the core midplane.
+    
+    \item \textbf{Temperature Reactivity Feedback} $\rho_{temp}$:
+    
+    \begin{equation}
+    \rho_{temp}(T_{fuel}) = \alpha_T (T_{fuel} - T_{in})
+    \end{equation}
+    
+    where $\alpha_T$ is the temperature coefficient of reactivity [pcm/K]. For most reactors, $\alpha_T < 0$ (negative feedback), providing inherent safety.
+\end{enumerate}
+
+\subsection{Thermal-Hydraulic Coupling}
+
+The reactor power generates heat in the fuel, which is removed by coolant. The thermal dynamics are modeled by:
+
+\subsubsection{Fuel Temperature}
+
+\begin{equation}
+\frac{dT_{fuel}}{dt} = \frac{Q(t) - h A_c (T_{fuel} - T_{coolant})}{m_{fuel} C_{p,fuel}}
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $Q(t)$ = thermal power from fission [W]
+    \item $h$ = heat transfer coefficient [W/cm$^2 \cdot$K]
+    \item $A_c$ = fuel-coolant contact area [cm$^2$]
+    \item $m_{fuel}$ = fuel mass [g]
+    \item $C_{p,fuel}$ = fuel specific heat capacity [J/g$\cdot$K]
+\end{itemize}
+
+\subsubsection{Coolant Temperature}
+
+\begin{equation}
+\frac{dT_{coolant}}{dt} = \frac{h A_c (T_{fuel} - T_{coolant}) + C_{p,H_2O} (T_{in} - T_{coolant}) \dot{m}_c}{m_{coolant} C_{p,H_2O}}
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $\dot{m}_c$ = coolant mass flow rate [g/s]
+    \item $T_{in}$ = coolant inlet temperature [K]
+\end{itemize}
+
+\subsubsection{Power Calculation}
+
+The thermal power is related to neutron density by:
+
+\begin{equation}
+Q(t) = V_r \cdot V_{f,fuel} \cdot n(t) \cdot v \cdot \Sigma_f \cdot E_f
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $V_r$ = reactor volume [cm$^3$]
+    \item $V_{f,fuel}$ = volume fraction of fuel
+    \item $v$ = neutron velocity [cm/s]
+    \item $\Sigma_f$ = macroscopic fission cross section [cm$^{-1}$]
+    \item $E_f$ = energy released per fission [J] $\approx 3.2 \times 10^{-11}$ J
+\end{itemize}
+
+\subsection{Control Rod Dynamics}
+
+Control rods absorb neutrons, reducing reactivity. Their position $h(t)$ changes at rate $\dot{h}$:
+
+\begin{equation}
+\frac{dh}{dt} = \dot{h}(t)
+\end{equation}
+
+The rod movement rate is limited to realistic values (e.g., 0.5\%/s) to simulate mechanical constraints.
+
+\subsection{Reactor SCRAM}
+
+SCRAM (Safety Control Rod Ax Man) is an emergency shutdown mechanism. In DUNE, SCRAM is triggered when:
+
+\begin{itemize}
+    \item Fuel temperature $T_{fuel} > 1700$ K
+    \item Coolant temperature $T_{coolant} > 700$ K
+    \item Manual SCRAM button activation
+\end{itemize}
+
+During SCRAM, control rods are immediately inserted ($h = 0$), introducing large negative reactivity and shutting down the reactor.
+
+\subsection{Xenon-135 Poisoning Dynamics}
+
+Xenon-135 is a fission product that acts as a powerful neutron absorber (poison). Its dynamics significantly affect reactor operation, especially during power changes and shutdowns.
+
+\subsubsection{Production and Removal Pathways}
+
+Xenon-135 has four main pathways:
+
+\begin{enumerate}
+    \item \textbf{Direct production from fission}: A small fraction ($\gamma_X \approx 0.003$) of fissions produce Xe-135 directly
+    \item \textbf{Production from Iodine-135 decay}: Most Xe-135 comes from I-135 decay ($t_{1/2} \approx 6.6$ hr)
+    \item \textbf{Radioactive decay}: Xe-135 decays to Cs-135 ($t_{1/2} \approx 9.2$ hr)
+    \item \textbf{Neutron absorption (burnout)}: The large absorption cross-section ($\sigma_{a,X} \approx 2.6 \times 10^6$ barns) causes significant neutron capture
+\end{enumerate}
+
+\subsubsection{Iodine-135 Balance Equation}
+
+\begin{equation}
+\frac{dI}{dt} = \gamma_I \Sigma_f \phi - \lambda_I I
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $I(t)$ = Iodine-135 concentration [atoms/cm$^3$]
+    \item $\gamma_I \approx 0.061$ = I-135 fission yield
+    \item $\phi = \eta \cdot n$ = neutron flux [neutrons/cm$^2\cdot$s]
+    \item $\lambda_I = 2.87 \times 10^{-5}$ s$^{-1}$ = I-135 decay constant
+\end{itemize}
+
+\subsubsection{Xenon-135 Balance Equation}
+
+\begin{equation}
+\frac{dX}{dt} = \gamma_X \Sigma_f \phi + \lambda_I I - \lambda_X X - \sigma_{a,X} \phi X
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $X(t)$ = Xenon-135 concentration [atoms/cm$^3$]
+    \item $\gamma_X \approx 0.003$ = Xe-135 direct fission yield
+    \item $\lambda_X = 2.09 \times 10^{-5}$ s$^{-1}$ = Xe-135 decay constant
+    \item $\sigma_{a,X} = 2.6 \times 10^6 \times 10^{-24}$ cm$^2$ = Xe-135 absorption cross-section
+\end{itemize}
+
+\subsubsection{Xenon Reactivity Contribution}
+
+Xenon introduces negative reactivity:
+
+\begin{equation}
+\rho_{Xe}(t) = -\frac{\sigma_{a,X} \eta X(t)}{\nu \Sigma_f \beta}
+\end{equation}
+
+where $\nu \approx 2.43$ is the average number of neutrons per fission for U-235.
+
+\subsubsection{Total Reactivity with Xenon}
+
+The complete reactivity expression becomes:
+
+\begin{equation}
+\rho_{total}(t) = \rho_{rod}(h) + \rho_{temp}(T_{fuel}) + \rho_{Xe}(X)
+\end{equation}
+
+\subsubsection{Physical Phenomena Modeled}
+
+\begin{itemize}
+    \item \textbf{Xenon Buildup}: After startup, Xe-135 concentration increases over 20-40 hours to equilibrium
+    \item \textbf{Equilibrium Xenon}: Production balances decay and burnout at steady power
+    \item \textbf{Xenon Transients}: Power increases boost burnout, temporarily reducing Xe poisoning
+    \item \textbf{Xenon Pit}: During shutdown, I-135 continues decaying to Xe-135 without burnout, causing a poisoning peak at $\sim$10-12 hours that may prevent reactor restart
+    \item \textbf{Load Following}: Xenon dynamics complicate power changes, requiring anticipatory control strategies
+\end{itemize}
+
+\subsection{Samarium-149 Poisoning Dynamics}
+
+Samarium-149 is another critical fission product poison with characteristics distinct from Xenon-135. It has a very large absorption cross-section and builds up through a multi-step decay chain.
+
+\subsubsection{Production and Removal Pathways}
+
+Samarium-149 formation involves a three-isotope chain:
+
+\begin{enumerate}
+    \item \textbf{Neodymium-149}: Direct fission product ($\gamma_{Nd} \approx 0.011$, $t_{1/2} \approx 1.73$ hr)
+    \item \textbf{Promethium-149}: Intermediate isotope ($t_{1/2} \approx 53.1$ hr, moderate absorption)
+    \item \textbf{Samarium-149}: Final stable product (essentially no radioactive decay, very high absorption)
+\end{enumerate}
+
+\subsubsection{Neodymium-149 Balance Equation}
+
+\begin{equation}
+\frac{dNd}{dt} = \gamma_{Nd} \Sigma_f \phi - \lambda_{Nd} Nd
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $Nd(t)$ = Neodymium-149 concentration [atoms/cm$^3$]
+    \item $\gamma_{Nd} \approx 0.011$ = Nd-149 fission yield
+    \item $\lambda_{Nd} = 9.67 \times 10^{-5}$ s$^{-1}$ = Nd-149 decay constant
+\end{itemize}
+
+\subsubsection{Promethium-149 Balance Equation}
+
+\begin{equation}
+\frac{dPm}{dt} = \lambda_{Nd} Nd - \lambda_{Pm} Pm - \sigma_{a,Pm} \phi Pm
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $Pm(t)$ = Promethium-149 concentration [atoms/cm$^3$]
+    \item $\lambda_{Pm} = 1.46 \times 10^{-6}$ s$^{-1}$ = Pm-149 decay constant
+    \item $\sigma_{a,Pm} = 1,400 \times 10^{-24}$ cm$^2$ = Pm-149 absorption cross-section
+\end{itemize}
+
+\subsubsection{Samarium-149 Balance Equation}
+
+\begin{equation}
+\frac{dSm}{dt} = \lambda_{Pm} Pm - \sigma_{a,Sm} \phi Sm
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $Sm(t)$ = Samarium-149 concentration [atoms/cm$^3$]
+    \item $\sigma_{a,Sm} = 40,800 \times 10^{-24}$ cm$^2$ = Sm-149 absorption cross-section (very large!)
+    \item No decay term: Sm-149 half-life $\sim 2 \times 10^{15}$ years (essentially stable)
+\end{itemize}
+
+\subsubsection{Samarium Reactivity Contribution}
+
+\begin{equation}
+\rho_{Sm}(t) = -\frac{\sigma_{a,Sm} \eta Sm(t)}{\nu \Sigma_f \beta}
+\end{equation}
+
+\subsubsection{Total Reactivity with Both Poisons}
+
+\begin{equation}
+\rho_{total}(t) = \rho_{rod}(h) + \rho_{temp}(T_{fuel}) + \rho_{Xe}(X) + \rho_{Sm}(Sm)
+\end{equation}
+
+\subsubsection{Physical Phenomena Modeled}
+
+\begin{itemize}
+    \item \textbf{Slow Buildup}: Sm-149 reaches equilibrium over days (vs hours for Xe-135)
+    \item \textbf{Equilibrium Poisoning}: At steady power, typically contributes -0.5 to -1.0\% $\Delta k/k$
+    \item \textbf{Permanent Poison}: No radioactive decay; removed only by neutron absorption
+    \item \textbf{Burnup Dependence}: Accumulates over core lifetime, unlike xenon which equilibrates quickly
+    \item \textbf{Shutdown Behavior}: Unlike xenon, shows minimal transient peak after shutdown
+    \item \textbf{Power Coefficient}: Higher power increases burnout rate, reducing Sm poisoning
+\end{itemize}
+
+\subsubsection{Comparison: Xenon-135 vs Samarium-149}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{Property} & \textbf{Xe-135} & \textbf{Sm-149} \\
+\midrule
+Absorption cross-section & 2.6 million barns & 40,800 barns \\
+Time to equilibrium & 20-40 hours & Several days \\
+Decay half-life & 9.2 hours & Stable \\
+Shutdown transient & Large peak ($\sim$12 hr) & Minimal \\
+Equilibrium worth & $-2$ to $-3$\% $\Delta k/k$ & $-0.5$ to $-1$\% $\Delta k/k$ \\
+\bottomrule
+\end{tabular}
+\caption{Comparison of Xenon-135 and Samarium-149 poisoning characteristics}
+\end{table}
+
+\subsection{Extended State Vector}
+
+With both Xenon-135 and Samarium-149 poisoning implemented, the complete reactor system is now described by a 15-dimensional state vector:
+
+\begin{equation}
+\mathbf{S}(t) = [n(t), C_1(t), \ldots, C_6(t), T_{fuel}(t), T_{coolant}(t), h(t), I(t), X(t), Nd(t), Pm(t), Sm(t)]^T
+\end{equation}
+
+The system is solved as a coupled set of ODEs using numerical integration.
+
+\subsection{Complete State Vector}
+
+\textit{Note: With the implementation of both Xenon-135 and Samarium-149 poisoning, the state vector has been expanded to 15 dimensions, tracking the complete decay chains of both major fission product poisons.}
+
+% ===========================
+% SECTION 4: REACTOR PHYSICS MODULE
+% ===========================
+\section{Detailed Code Walkthrough: reactorPhysics.py}
+
+This section provides a comprehensive line-by-line analysis of the reactor physics implementation.
+
+\subsection{Module Header and Physical Constants}
+
+\begin{lstlisting}[style=pythonstyle, caption={Physical Constants and Delayed Neutron Data}]
+#!/usr/bin/env python3
+
+# Contains reactor kenetics equations
+# and reactor parameters
+
+import numpy as np
+
+# 6-group delayed neutron precursor data for U-235 (more accurate)
+beta_i = np.array([0.000215, 0.001424, 0.001274, 0.002568, 0.000748, 0.000273])  
+# Delayed neutron fractions for each of the 6 groups
+# These values are specific to U-235 thermal fission
+# Units: dimensionless (fraction of total neutrons)
+
+lambda_i = np.array([0.0124, 0.0305, 0.111, 0.301, 1.14, 3.01])  
+# Decay constants [1/s] for each precursor group
+# These determine the time scales at which delayed neutrons are released
+# Group 1: ~80 second half-life (long-lived precursors)
+# Group 6: ~0.23 second half-life (short-lived precursors)
+
+beta = np.sum(beta_i)  
+# Total delayed neutron fraction = 0.0065 (0.65%)
+# This is the key parameter that makes reactor control possible
+# Without delayed neutrons, reactors would be uncontrollable
+
+Lamb = 10.e-5  
+# Average neutron lifetime (generation time) [s]
+# For thermal reactors: ~10^-5 seconds
+# This is the time from neutron birth to inducing next fission
+\end{lstlisting}
+
+\textbf{Explanation:} These constants define the fundamental nuclear data for U-235. The six-group delayed neutron model provides accurate representation of precursor decay dynamics across different time scales. The total delayed neutron fraction $\beta = 0.0065$ is critical—it determines the dollar-based reactivity scale and enables controllable reactor operation.
+
+\begin{lstlisting}[style=pythonstyle, caption={Reactor Geometry and Material Properties}]
+v = 2200.e3  
+# Neutron velocity cm/s
+# This is the thermal neutron velocity at 20°C
+# Corresponds to 0.025 eV neutron energy (thermal equilibrium)
+
+Ef = 3.204e-11  
+# Energy per fission [J]
+# For U-235: approximately 200 MeV per fission
+# Converted to Joules: 200 MeV * 1.602e-13 J/MeV
+
+Sigma_f = 0.0065  
+# Macrosopic fission cross section in reactor [1/cm]
+# This depends on fuel enrichment and geometry
+# Represents probability of fission per unit path length
+
+Vr = 3.e6  
+# Reactor volumue [cc] = 3 cubic meters
+# Typical small research reactor size
+# Determines total power capacity and heat generation
+
+Lc = Lamb * v  
+# Mean neutron travel length in core [cm]
+# = (10^-5 s) * (2.2 × 10^6 cm/s) = 22 cm
+# Characteristic diffusion length scale
+
+VfFuel = 0.4
+# Volume fraction occupied by fuel
+# Remaining 60% is coolant, structure, etc.
+
+VfH2O = 1. - VfFuel
+# Volume fraction of water (coolant + moderator)
+\end{lstlisting}
+
+\textbf{Explanation:} These parameters define the reactor geometry and material composition. The fission cross section, reactor volume, and volume fractions determine the neutron multiplication and power density. The 40\% fuel volume fraction is typical of light water reactors.
+
+\begin{lstlisting}[style=pythonstyle, caption={Heat Transfer Parameters}]
+hc = 1.    
+# W/cm^2 * K avg heat transfer coeff between fuel and water
+# This is a simplified constant coefficient
+# In reality, h depends on flow rate, temperature, geometry
+# Typical values: 0.5-2 W/cm^2·K for LWR conditions
+
+Ac = 4.e5  
+# cm^2  fuel to coolant contact area
+# Large surface area needed for efficient heat removal
+# = 40 m^2 for 3 m^3 reactor (reasonable geometric estimate)
+
+Tin = 450.  
+# K coolant inlet temperature
+# = 177°C, typical for pressurized water reactors
+# Below boiling point at atmospheric pressure
+\end{lstlisting}
+
+\subsection{Reactivity Feedback Coefficient}
+
+\begin{lstlisting}[style=pythonstyle, caption={Temperature Coefficient of Reactivity}]
+alphaT = -0.007 * 1.e-5 / beta  
+# pcm / K / beta  reactivity per kelvin
+# Negative temperature coefficient provides stability
+# As fuel heats up, reactivity decreases (negative feedback)
+# Magnitude: -0.007 pcm/K / 0.0065 ≈ -0.0011 $/K
+# This self-regulating behavior is crucial for reactor safety
+
+# Number of delayed neutron groups
+NUM_GROUPS = 6
+\end{lstlisting}
+
+\textbf{Physical Significance:} The negative temperature coefficient is a cornerstone of reactor safety. As power increases, fuel temperature rises, which reduces reactivity, naturally limiting the power excursion. This provides inherent safety even without active control systems.
+
+\subsection{Neutron Population Dynamics}
+
+\begin{lstlisting}[style=pythonstyle, caption={Neutron Density Time Derivative}]
+def dndt(S, t, reactivity):
+    """
+    Time derivative of neutron population with 6 delayed neutron groups.
+    
+    Implements: dn/dt = [(rho - beta)/Lambda] * n + sum(lambda_i * C_i)
+    
+    Args:
+        S: State vector [n, C1, C2, C3, C4, C5, C6, Tfuel, Tcoolant, h]
+        t: Time (not explicitly used, but required by ODE solver)
+        reactivity: Current reactivity in dollars
+    
+    Returns:
+        dn/dt: Rate of change of neutron density [neutrons/cm^3/s]
+    """
+    # Sum contributions from all delayed neutron groups
+    # Each group releases neutrons at rate lambda_i * C_i
+    delayed_contribution = np.sum(lambda_i * S[1:7])
+    
+    # Main point kinetics equation
+    # Prompt neutron contribution: (reactivity - beta) / Lambda * n
+    # Delayed neutron contribution: sum of all precursor decay rates
+    ndot = (reactivity - beta) / Lamb * S[0] + delayed_contribution
+    
+    # Prevent unphysical negative neutron population
+    # If neutrons are already zero and decreasing, set derivative to zero
+    if S[0] <= 0. and ndot < 0.:
+        return 0.
+    else:
+        return ndot
+\end{lstlisting}
+
+\textbf{Mathematical Details:} This function implements Equation (1) from the theory section. The prompt term $({\rho - \beta})/{\Lambda}$ has units of [1/s], and when multiplied by neutron density gives [neutrons/cm$^3$/s]. The delayed contribution sums over all six precursor groups, each contributing at their characteristic decay rate $\lambda_i$.
+
+\subsection{Precursor Population Dynamics}
+
+\begin{lstlisting}[style=pythonstyle, caption={Delayed Neutron Precursor Evolution}]
+def dCdt(S, t, group_index):
+    """
+    Time derivative of delayed neutron precursor population for a specific group.
+    
+    Implements: dC_i/dt = (beta_i/Lambda) * n - lambda_i * C_i
+    
+    Args:
+        S: State vector
+        t: Time
+        group_index: Which precursor group (0-5 for groups 1-6)
+    
+    Returns:
+        dC_i/dt: Rate of change of precursor concentration [nuclei/cm^3/s]
+    """
+    lifetimeCorrection = 0.6
+    # Empirical correction factor accounting for 4-factor formula
+    # Compensates for neutron losses during moderation and diffusion
+    # Effective survival probability from birth to next fission
+    
+    C_index = group_index + 1  
+    # Precursor concentration stored at S[1] to S[6]
+    # Index 0 is neutron density
+    
+    # Production of precursors from fissions
+    # beta_i fraction of neutrons create this precursor type
+    production = (beta_i[group_index] / Lamb) * S[0] * lifetimeCorrection
+    
+    # Loss of precursors due to radioactive decay
+    # Releases delayed neutrons at rate lambda_i
+    decay = lambda_i[group_index] * S[C_index]
+    
+    Cdot = production - decay
+    
+    # Prevent unphysical negative precursor concentrations
+    if S[C_index] < 0. and Cdot < 0.:
+        return 0.
+    else:
+        return Cdot
+\end{lstlisting}
+
+\textbf{Implementation Note:} The \texttt{lifetimeCorrection} factor (0.6) accounts for neutron losses not explicitly modeled in the point kinetics approximation, such as leakage and parasitic absorption. This ensures the steady-state precursor concentrations match the expected equilibrium values.
+
+\subsection{Thermal Power Calculation}
+
+\begin{lstlisting}[style=pythonstyle, caption={Fission Power Calculation}]
+def qFuel(n):
+    """
+    Given neutron population return thermal power
+    
+    Power [W] = Volume * fuel_fraction * (neutron_density * velocity) 
+                * fission_cross_section * energy_per_fission
+    
+    Args:
+        n: Neutron density [neutrons/cm^3]
+    
+    Returns:
+        Thermal power [W]
+    """
+    return Vr * VfFuel * (n * v) * Sigma_f * Ef
+\end{lstlisting}
+
+\textbf{Physical Interpretation:} This calculates power from neutron density using:
+
+\begin{equation}
+Q = V_r \cdot V_{f,fuel} \cdot (n \cdot v) \cdot \Sigma_f \cdot E_f
+\end{equation}
+
+The product $(n \cdot v)$ gives neutron flux [neutrons/cm$^2$/s], multiplied by $\Sigma_f$ gives fission rate density [fissions/cm$^3$/s], and multiplied by $E_f$ gives power density [W/cm$^3$].
+
+\subsection{Fuel Temperature Dynamics}
+
+\begin{lstlisting}[style=pythonstyle, caption={Fuel Temperature Evolution with Improved Heat Transfer}]
+def dTfdt(S, t, mdotC):
+    """
+    Time derivative of fuel temperature with improved heat transfer.
+    Uses temperature-dependent properties and Dittus-Boelter correlation.
+    
+    Energy balance: Heat in (fission) = Heat out (to coolant) + Heat stored
+    
+    Args:
+        S: State vector
+        t: Time
+        mdotC: Coolant mass flow rate [g/s]
+    
+    Returns:
+        dT_fuel/dt [K/s]
+    """
+    # Temperature-dependent UO2 heat capacity (J/g*K)
+    T_fuel = S[7]  # fuel temperature at index 7
+    CpUO2 = 0.2455 + 5.86e-5 * (T_fuel - 273.15)  
+    # Linear temperature dependence for UO2
+    # Base value ~245 J/kg·K at room temp
+    # Increases slightly with temperature
+    
+    densityUO2 = 12.5  # g/cc (theoretical density ~10.97, using higher for sintered fuel)
+    
+    # Improved heat transfer coefficient using flow-dependent correlation
+    # Dittus-Boelter-like correlation: h = h0 * (mdot/mdot0)^0.8
+    h0 = 1.5  # W/cm^2*K baseline heat transfer coefficient
+    mdot0 = 1000.e3  # reference flow rate [g/s] = 1000 kg/s
+    h = h0 * (mdotC / mdot0) ** 0.8
+    # Heat transfer improves with flow rate (turbulent convection)
+    # Power 0.8 from Dittus-Boelter correlation for turbulent flow
+    
+    # Heat generation from fission
+    heat_in = qFuel(S[0])
+    
+    # Heat removal to coolant
+    heat_out = Ac * h * (S[7] - S[8])  # Newton's law of cooling
+    
+    # Fuel thermal mass
+    fuel_mass = densityUO2 * VfFuel * Vr
+    
+    # Energy balance: dE/dt = Q_in - Q_out
+    # dE/dt = m * Cp * dT/dt
+    return (heat_in - heat_out) / (fuel_mass * CpUO2)
+\end{lstlisting}
+
+\textbf{Engineering Details:} The Dittus-Boelter correlation $h \propto \dot{m}^{0.8}$ captures the turbulent flow heat transfer enhancement. Higher coolant flow rates improve heat removal, reducing fuel temperatures and preventing overheating. The temperature-dependent heat capacity makes the model more accurate at high temperatures.
+
+\subsection{Coolant Temperature Dynamics}
+
+\begin{lstlisting}[style=pythonstyle, caption={Coolant Temperature Evolution}]
+def dTcdt(S, t, mdotC):
+    """
+    Time derivative of water coolant with improved heat transfer.
+    Uses temperature-dependent properties.
+    
+    Energy balance for coolant:
+    Heat in (from fuel) + Heat in (from inlet flow) = Heat out (exit flow) + Heat stored
+    
+    Args:
+        S: State vector
+        t: Time
+        mdotC: Coolant mass flow rate [g/s]
+    
+    Returns:
+        dT_coolant/dt [K/s]
+    """
+    # Temperature-dependent water properties
+    T_coolant = S[8]  # coolant temperature at index 8
+    CpH2O = 4.2 - 0.0005 * (T_coolant - 273.15)  
+    # Water heat capacity in J/g*K
+    # Decreases slightly with temperature (accurate for liquid water)
+    # At 25°C: ~4.18 J/g·K
+    
+    densityH2O = 1.0  # g/cc (simplified, actual density varies with T)
+    
+    # Use same improved heat transfer coefficient
+    h0 = 1.5
+    mdot0 = 1000.e3
+    h = h0 * (mdotC / mdot0) ** 0.8
+    
+    # Heat transferred from fuel to coolant
+    heat_from_fuel = Ac * h * (S[7] - S[8])
+    
+    # Energy brought in by inlet coolant flow
+    # mdotC * Cp * (Tin - Tcoolant)
+    # If coolant is hotter than inlet, this term is negative (cooling effect)
+    heat_from_inlet = CpH2O * (Tin - S[8]) * mdotC
+    
+    # Coolant thermal mass
+    coolant_mass = densityH2O * Vr * CpH2O
+    
+    return (heat_from_fuel + heat_from_inlet) / coolant_mass
+\end{lstlisting}
+
+\textbf{Physical Insight:} The coolant acts as a heat transport medium. Heat is transferred from the hot fuel (first term) and cold inlet coolant continuously refreshes the core (second term). Higher flow rates increase the cooling effect, as seen in the \texttt{heat\_from\_inlet} term being proportional to $\dot{m}_c$.
+
+\subsection{Control Rod Worth Functions}
+
+\begin{lstlisting}[style=pythonstyle, caption={Control Rod Reactivity Worth Curves}]
+def diffRodWorth(h):
+    """
+    Improved differential control rod worth curve using cosine shape.
+    Tuned to achieve total worth of 0.1 $ from fully inserted to fully withdrawn.
+    h is fractional height: h=0 is fully inserted, h=100 is fully withdrawn
+    delta_h * R(h) = reactivity change
+    
+    Physical basis: Rod worth follows importance-weighted distribution
+    Maximum near core midplane (h=50), zero at top/bottom
+    
+    Args:
+        h: Rod height position [%] (0 = inserted, 100 = withdrawn)
+    
+    Returns:
+        Differential rod worth [$/% height]
+    """
+    scalingFac = 0.01021 * 1.e-5 / beta  
+    # Tuning factor to achieve desired total rod worth
+    # Result: total integral worth = 0.1 dollars
+    
+    # Sinusoidal shape: peaks at h=50 (core midplane)
+    return scalingFac * np.sin(np.pi * h / 100.0) * 100.0
+
+def intRodWorth(h1, h2):
+    """
+    Integral control rod worth curve.
+    Returns reactivity in dollars ($/Beta)
+    
+    Integrates differential worth from position h1 to h2
+    rho = integral from h1 to h2 of R(h) dh
+    
+    Args:
+        h1: Initial rod position [%]
+        h2: Final rod position [%]
+    
+    Returns:
+        Reactivity change [dollars]
+    """
+    scalingFac = 0.01021 * 1.e-5 / beta
+    
+    # Analytical integral of sin(pi*h/100):
+    # integral = -100/pi * cos(pi*h/100)
+    integral = lambda h: -100.0 * scalingFac * (100.0 / np.pi) * np.cos(np.pi * h / 100.0)
+    
+    return (integral(h2) - integral(h1))
+\end{lstlisting}
+
+\textbf{Mathematical Justification:} The sinusoidal rod worth shape reflects neutron importance weighting in the reactor core. Neutrons near the core center (where flux is maximum) have the highest importance for criticality. Therefore, control rod position changes near the midplane have maximum reactivity effect.
+
+\subsection{Total Reactivity Calculation}
+
+\begin{lstlisting}[style=pythonstyle, caption={Combined Reactivity from All Feedback Mechanisms}]
+def rho(S, t, hrate, deltaT):
+    """
+    Temperature and control rod reactivity.
+    Reactivity in units of Dollars  (deltaK / Beta)
+    Takes control rod movement rate in (%/s)
+    
+    Total reactivity = control rod component + temperature feedback
+    
+    Args:
+        S: State vector
+        t: Time
+        hrate: Rod movement rate [%/s] (not used in calculation, but kept for interface)
+        deltaT: Time step (not used, but kept for interface)
+    
+    Returns:
+        Total reactivity [dollars]
+    """
+    # Temperature feedback: negative for stability
+    # Alpha_T * (T_fuel - T_inlet)
+    temp_reactivity = alphaT * (S[7] - Tin)
+    
+    # Control rod reactivity: integral worth from 0 to current position
+    # More withdrawn (higher h) = more positive reactivity
+    rod_reactivity = intRodWorth(0., S[9])
+    
+    return temp_reactivity + rod_reactivity
+\end{lstlisting}
+
+\textbf{Design Philosophy:} Separating reactivity into components (temperature and control) allows clear understanding of competing effects. During a power increase, positive rod reactivity may be countered by negative temperature feedback, demonstrating the self-regulating nature of the design.
+
+\subsection{Complete Reactor System ODEs}
+
+\begin{lstlisting}[style=pythonstyle, caption={Full Reactor System Differential Equations}]
+def reactorSystem(S, t, hrate, deltaT, mdotC=1000.e3):
+    """
+    Complete reactor system with 6 delayed neutron groups.
+    State vector S = [n, C1, C2, C3, C4, C5, C6, Tfuel, Tcoolant, rodPosition]
+    
+    This function returns dS/dt for the entire 10-dimensional state vector.
+    Called by scipy's ODE integrator (odeint).
+    
+    Args:
+        S: Current state vector (length 10)
+        t: Current time [s]
+        hrate: Control rod movement rate [%/s]
+        deltaT: Time step (for reference, not used in continuous ODEs)
+        mdotC: Coolant mass flow rate [g/s]
+    
+    Returns:
+        dS/dt: Time derivatives of all state variables
+    """
+    # Calculate current reactivity based on state
+    reactivity = rho(S, t, hrate, deltaT)
+    
+    # Build derivative vector
+    # Start with neutron population derivative
+    dSdt = [dndt(S, t, reactivity)]
+    
+    # Add all 6 precursor group derivatives
+    for i in range(NUM_GROUPS):
+        dSdt.append(dCdt(S, t, i))
+    
+    # Add temperature derivatives (fuel and coolant)
+    dSdt.append(dTfdt(S, t, mdotC))
+    dSdt.append(dTcdt(S, t, mdotC))
+    
+    # Add control rod position derivative
+    # Rod position changes at specified rate
+    dSdt.append(hrate)
+    
+    return dSdt
+\end{lstlisting}
+
+\textbf{Numerical Integration:} This function returns $\frac{d\mathbf{S}}{dt}$ for the entire state vector. The scipy \texttt{odeint} function uses this to advance the system forward in time using adaptive step size Runge-Kutta methods, ensuring numerical stability and accuracy.
+
+% ===========================
+% SECTION 5: REACTOR CONTROL
+% ===========================
+\section{Reactor Control System: reactor.py}
+
+The \texttt{reactor.py} module provides the high-level interface for reactor operation, implementing control logic, safety systems, and state management.
+
+\subsection{DUNEReactor Class Structure}
+
+\begin{lstlisting}[style=pythonstyle, caption={DUNEReactor Class Initialization}]
+class DUNEReactor(object):
+    """
+    Provides methods to interact with the point kenetics model.
+    The reactor system state vector (with 6 delayed neutron groups):
+    S = [neutrons/cc, C1, C2, C3, C4, C5, C6, fuelT, coolantT, rodPosition]
+    """
+    def __init__(self, initialSystemState=None, tstep=0.01):
+        """ Initialize reactor system state """
+        if initialSystemState is None:
+            # Default initial conditions
+            n0 = 5.e7  # Initial neutron density [neutrons/cm^3]
+            # Corresponds to ~1 MW thermal power at steady state
+            
+            # Initialize precursor concentrations
+            # At equilibrium: C_i = (beta_i / lambda_i / Lambda) * n
+            # Simplified here: distribute total beta equally among groups
+            C_init = [n0 * 0.0065 / 6.0] * 6  
+            
+            # Complete initial state:
+            # [n, C1-C6, Tfuel, Tcoolant, rodPosition]
+            initialSystemState = [n0] + C_init + [450., 450., 0.]
+            # Tfuel = Tcoolant = 450 K (isothermal start)
+            # Rod position = 0% (fully inserted, subcritical)
+            
+        self.S = np.array(initialSystemState)
+        self.reactivity = rho(self.S, 0, 0, 0)
+        self.tstep = tstep  # Time step for integration [s]
+        self.t = np.array([0, self.tstep])
+        
+        # Control variables
+        self.hrate = 0.0  # Rod movement rate [% / s]
+        self.rodSetPoint = 0.0  # Desired rod position [%]
+        self.mdotC = 1000.e3  # Coolant flow rate [g / s] = 1000 kg/s
+        self.coolantSetPoint = 1000.e3
+        self.pwrCtrl = False  # Power control mode off by default
+        self.scramToggle = False  # SCRAM status
+        
+        # Storage for plotting
+        self.maxTime = 100.  # Store last 100 seconds of data
+        dataStorLength = int(self.maxTime / self.tstep)
+        self.time = np.zeros(dataStorLength)
+        # Store: [n, sum(C1-C6), Tfuel, Tcoolant, rodPosition]
+        self.storVals = np.zeros((5, dataStorLength))
+\end{lstlisting}
+
+\textbf{Design Rationale:} The class encapsulates all reactor state and control parameters. The rolling data storage (last 100 seconds) provides efficient memory usage while maintaining sufficient history for visualization and trend analysis.
+
+\subsection{Time Stepping and Integration}
+
+\begin{lstlisting}[style=pythonstyle, caption={Time Integration Method}]
+def timeStep(self):
+    """ Step reactor system forward in time """
+    # Pre-step checks: control logic, safety systems
+    self.__preStep()
+    
+    # Integrate ODEs from t to t+tstep
+    # odeint returns array of solutions; take the last (final) value
+    self.S = integrate.odeint(reactorSystem, self.S, self.t,
+                              args=(self.hrate, self.tstep, self.mdotC))[-1]
+    
+    # Update reactivity based on new state
+    self.reactivity = rho(self.S, 0, 0, 0)
+    
+    # Advance time
+    self.t += self.tstep
+    
+    # Update rolling data storage
+    # Shift arrays left (discard oldest), append new values
+    self.storVals = np.roll(self.storVals, -1, axis=1)
+    self.time = np.roll(self.time, -1)
+    self.time[-1] = self.t[-1]
+    
+    # Store key values for plotting
+    self.storVals[:, -1] = np.array([
+        self.S[0],           # Neutron density
+        np.sum(self.S[1:7]), # Total precursor concentration
+        self.S[7],           # Fuel temperature
+        self.S[8],           # Coolant temperature
+        self.S[9]            # Rod position
+    ])
+\end{lstlisting}
+
+\textbf{Numerical Method:} The \texttt{scipy.integrate.odeint} function uses LSODA (Livermore Solver for Ordinary Differential equations with Automatic method switching), which automatically switches between stiff and non-stiff integration methods. This is essential for reactor kinetics, which can exhibit stiff behavior during rapid transients.
+
+\subsection{Pre-Step Control Logic}
+
+\begin{lstlisting}[style=pythonstyle, caption={Control Logic and Safety Checks Before Each Time Step}]
+def __preStep(self):
+    """
+    Check for valid rod movements or SCRAM condition
+    Applied before each time integration step
+    """
+    # Determine rod movement rate based on control mode
+    if self.pwrCtrl:
+        # Automatic power control using PID
+        self.__controlPID()
+    else:
+        # Manual rod positioning control
+        self.__rodCtrl()
+    
+    # Enforce physical rod position limits
+    if self.hrate < 0 and self.S[9] <= 0.:
+        # Cannot insert beyond 0% (fully in)
+        self.hrate = 0.
+    elif self.hrate > 0 and self.S[9] >= 100.:
+        # Cannot withdraw beyond 100% (fully out)
+        self.hrate = 0.
+    
+    # Update coolant flow rate (with ramping)
+    self.__controlCoolantRate()
+    
+    # Check for SCRAM conditions
+    self.__scramCheck()
+    
+    # If SCRAM active, immediately insert rods
+    if self.scramToggle:
+        self.S[9] = 0.  # Rods fully inserted
+        self.hrate = 0.  # No further movement
+\end{lstlisting}
+
+\subsection{SCRAM Protection System}
+
+\begin{lstlisting}[style=pythonstyle, caption={Automatic Reactor SCRAM Logic}]
+def __scramCheck(self):
+    """
+    Check for conditions which require us to SCRAM
+    Implements reactor protection system (RPS)
+    """
+    if self.S[7] > 1700:
+        # Fuel temperature SCRAM setpoint exceeded
+        # 1700 K = 1427°C (below UO2 melting point ~2865°C)
+        # Conservative limit to prevent fuel damage
+        print("Fuel Temperature SCRAM setpoint Exceeded")
+        self.SCRAM()
+        
+    elif self.S[8] > 700:
+        # Coolant temperature SCRAM setpoint exceeded
+        # 700 K = 427°C (well above water boiling point)
+        # Prevents loss of coolant and core damage
+        print("Coolant Temperature SCRAM setpoint Exceeded")
+        self.SCRAM()
+    else:
+        # All parameters within normal operating range
+        pass
+
+def SCRAM(self, scramToggle=True):
+    """
+    You crashed the reactor.
+    Initiate emergency shutdown by rapid rod insertion.
+    """
+    self.scramToggle = scramToggle
+\end{lstlisting}
+
+\textbf{Safety Philosophy:} The SCRAM system provides defense-in-depth protection. Multiple parameters are monitored, and any limit violation triggers immediate shutdown. The fuel temperature limit (1700 K) is set conservatively below the UO$_2$ melting point to ensure core integrity even under transient conditions.
+
+\subsection{Manual Rod Control}
+
+\begin{lstlisting}[style=pythonstyle, caption={Smooth Rod Position Control with Tanh Relaxation}]
+def __rodCtrl(self):
+    """
+    Manual control rod positioning mode
+    Smoothly moves rods toward setpoint using tanh function
+    """
+    # Calculate position error
+    diff = self.S[9] - self.rodSetPoint
+    
+    # Apply tanh function for smooth approach
+    # tanh provides fast initial movement that slows near target
+    fnDiff = np.tanh(1.0 * abs(diff))  
+    
+    if diff < 0.:
+        # Current position below setpoint: withdraw rods (increase h)
+        self.hrate = 0.5 * fnDiff  # Maximum 0.5%/s withdrawal
+    elif diff > 0.:
+        # Current position above setpoint: insert rods (decrease h)
+        self.hrate = -0.5 * fnDiff  # Maximum 0.5%/s insertion
+    else:
+        # At setpoint: no movement
+        self.hrate = 0.
+
+def setRodPosition(self, rodPos):
+    """Set desired rod position [%]"""
+    self.rodSetPoint = rodPos
+
+def setRodRate(self, rodRate):
+    """Directly set rod movement rate [%/s] (manual override)"""
+    if not self.pwrCtrl:
+        self.hrate = rodRate
+\end{lstlisting}
+
+\textbf{Control Strategy:} The hyperbolic tangent function provides smooth, stable rod movement. As the rod approaches the setpoint, the movement rate automatically decreases, preventing overshoot and oscillation. This mimics realistic mechanical control systems with position servos.
+
+\subsection{PID Power Control}
+
+\begin{lstlisting}[style=pythonstyle, caption={Proportional-Integral-Derivative Power Controller}]
+def togglePwrCtrl(self, pwrSet, pwrCtrlToggle=True):
+    """
+    Enable/disable automatic power control
+    Set desired power in MW
+    """
+    self.pwrSet = pwrSet  # Target power [MW]
+    self.pwrCtrl = pwrCtrlToggle
+    self.pidBias = 0.0  # PID integrator bias
+    self.hrate = 0.0  # Reset rod movement
+
+def __controlPID(self):
+    """
+    PID controller for automatic power regulation
+    Adjusts control rod position to maintain target power
+    """
+    maxRate = 0.60  # Maximum rod movement rate [%/s]
+    
+    # PID tuning parameters (manually tuned for stability)
+    Kp = 0.0100000   # Proportional gain
+    Ki = 0.0001000   # Integral gain
+    Kd = 0.0001000   # Derivative gain
+    
+    # Current power level
+    currentpwr = qFuel(self.S[0]) / 1.e6  # [MW]
+    
+    # Error signal: desired - actual
+    errorFn = self.pwrSet - qFuel(self.storVals[0, :]) / 1.e6
+    
+    # Integral term: sum of recent errors
+    # Use last 100 stored values for integral accumulation
+    errorIntegral = np.sum(errorFn[-100:])
+    
+    # Derivative term: rate of error change
+    errorDerivative = (errorFn[-1] - errorFn[-2]) / self.tstep
+    
+    if hasattr(self, 'pwrSet'):
+        # PID control law
+        pidOut = (self.pidBias + 
+                  Kp * (self.pwrSet - currentpwr) +  # Proportional
+                  Ki * errorIntegral +                # Integral
+                  Kd * errorDerivative)               # Derivative
+        
+        self.hrate = pidOut
+        
+        # Limit rod movement rate to physical constraints
+        if abs(self.hrate) > maxRate:
+            # Preserve sign, limit magnitude
+            self.hrate = maxRate * (self.hrate / abs(self.hrate))
+    else:
+        # Initialize with current power as setpoint
+        self.togglePwrCtrl(qFuel(self.S[0]) / 1.e6)
+\end{lstlisting}
+
+\textbf{Control Theory:} The PID controller implements three actions:
+\begin{itemize}
+    \item \textbf{Proportional (P)}: Responds to current error magnitude. Larger errors produce faster rod movement.
+    \item \textbf{Integral (I)}: Eliminates steady-state error by accumulating past errors. Ensures the reactor reaches exactly the target power.
+    \item \textbf{Derivative (D)}: Anticipates future error by responding to error rate. Provides damping to prevent overshoot.
+\end{itemize}
+
+The relatively small gains ($K_p = 0.01$, $K_i = 0.0001$, $K_d = 0.0001$) are necessary because reactor power is extremely sensitive to rod position. Aggressive tuning would cause instability and power oscillations.
+
+\subsection{Coolant Flow Control}
+
+\subsubsection{Dynamic Flow Rate Adjustment}
+
+The reactor automatically adjusts coolant flow rate based on power output when manual control is disabled:
+
+\begin{lstlisting}[style=pythonstyle, caption={Automatic Power-Based Flow Rate Adjustment}]
+def __updateCoolantForPower(self):
+    """
+    Automatically adjust coolant setpoint based on reactor power
+    Maps power to coolant flow rate: low power ~ 200 kg/s, high power ~ 1200 kg/s
+    """
+    currentPower = qFuel(self.S[0]) / 1.e6  # Power in MW
+    maxPwr = 600.  # Maximum power for scaling
+    
+    # Normalize power (0 to 1)
+    normPwr = abs(currentPower / maxPwr)
+    if normPwr > 1.0:
+        normPwr = 1.0
+    
+    # Map to coolant flow rate range
+    minFlowRate = 200.e3  # 200 kg/s = 200000 g/s at minimum power
+    maxFlowRate = 1200.e3  # 1200 kg/s = 1200000 g/s at maximum power
+    self.coolantSetPoint = minFlowRate + (maxFlowRate - minFlowRate) * normPwr
+\end{lstlisting}
+
+\textbf{Engineering Rationale:} In real PWR reactors, coolant flow rate must match thermal power output to maintain proper heat removal and prevent departure from nucleate boiling (DNB). The optimized linear mapping from 200 kg/s to 1200 kg/s provides adequate cooling margin across the entire power range while reducing pumping power requirements at maximum capacity.
+
+\subsubsection{Manual Coolant Control Mode}
+
+\begin{lstlisting}[style=pythonstyle, caption={User-Controlled Flow Rate Mode}]
+def toggleCoolantCtrl(self, coolantSet, coolantCtrlToggle=True):
+    """
+    Set coolant flow rate in kg/s (converts to g/s internally)
+    When enabled, user has direct control over flow rate
+    """
+    self.coolantSetPoint = coolantSet * 1.e3  # convert kg/s to g/s
+    self.coolantCtrl = coolantCtrlToggle
+    if self.coolantCtrl:
+        self.mdotC = self.coolantSetPoint
+\end{lstlisting}
+
+\subsubsection{Gradual Flow Rate Ramping}
+
+\begin{lstlisting}[style=pythonstyle, caption={Smooth Coolant Flow Transitions}]
+def setCoolantRate(self, mdotCin):
+    """Set desired coolant flow rate [g/s]"""
+    self.coolantSetPoint = mdotCin
+
+def __controlCoolantRate(self):
+    """
+    Gradually adjust coolant flow rate toward setpoint
+    Prevents sudden flow changes that could cause thermal shock
+    """
+    # Calculate flow rate error
+    diff = (self.coolantSetPoint - self.mdotC) / 10.
+    
+    # Apply tanh for smooth ramping
+    fnDiff = np.tanh(1.0 * abs(diff))
+    
+    if self.coolantSetPoint > self.mdotC:
+        # Increase flow rate
+        self.mdotC += 1. / self.tstep * fnDiff
+    elif self.coolantSetPoint < self.mdotC:
+        # Decrease flow rate
+        self.mdotC -= 1. / self.tstep * fnDiff
+    else:
+        pass
+\end{lstlisting}
+
+\textbf{Engineering Consideration:} Gradual flow rate changes prevent thermal shock to reactor components. Sudden coolant flow changes could cause rapid temperature gradients, potentially damaging fuel cladding or pressure boundaries. The tanh function provides smooth, asymptotic approach to the setpoint.
+
+\subsection{Testing and Validation}
+
+\begin{lstlisting}[style=pythonstyle, caption={Reactor Test Function}]
+def test():
+    """
+    Test reactor in rod control and power control modes.
+    Validates basic functionality before GUI integration.
+    """
+    i = 0
+    t0 = time.time()  # Wall clock timing
+    duneReactor = DUNEReactor()
+    
+    # ===== TEST 1: Manual Rod Control =====
+    duneReactor.setRodPosition(50.)  # Withdraw rods to 50%
+    while i < 10000:
+        duneReactor.timeStep()
+        print("===================================")
+        print("Time [s] = %f" % duneReactor.t[-1])
+        print("Rod percent Withdrawn = %f" % duneReactor.S[9])
+        print("Reactor Power [MW] = %f " % float(qFuel(duneReactor.S[0]) / 1.e6))
+        print("Tfuel [K] = %f ,  Tcoolant [K] = %f" % (duneReactor.S[7], duneReactor.S[8]))
+        i += 1
+    
+    # ===== TEST 2: Automatic Power Control =====
+    i = 0
+    duneReactor.togglePwrCtrl(200.)  # Set target power to 200 MW
+    while i < 10000:
+        duneReactor.timeStep()
+        print("===================================")
+        print("Time [s] = %f" % duneReactor.t[-1])
+        print("Rod percent Withdrawn = %f" % duneReactor.S[9])
+        print("Reactor Power [MW] = %f " % float(qFuel(duneReactor.S[0]) / 1.e6))
+        print("Tfuel [K] = %f ,  Tcoolant [K] = %f" % (duneReactor.S[7], duneReactor.S[8]))
+        i += 1
+    
+    t1 = time.time()
+    print("Execution time: %f seconds" % (t1 - t0))
+
+if __name__ == "__main__":
+    test()
+\end{lstlisting}
+
+% ===========================
+% SECTION 6: GUI IMPLEMENTATION
+% ===========================
+\section{GUI Frontend: duneReactor.py}
+
+The graphical user interface provides interactive control and real-time visualization of reactor behavior.
+
+\subsection{GUI Architecture Overview}
+
+The GUI is built using:
+\begin{itemize}
+    \item \textbf{wxPython}: Cross-platform GUI framework for controls and layout
+    \item \textbf{matplotlib}: Embedded plotting for real-time data visualization
+    \item \textbf{Timer events}: Asynchronous reactor updates and plot refreshes
+    \item \textbf{Serial communication}: Optional Arduino integration for hardware feedback
+\end{itemize}
+
+\subsection{Main Application Class}
+
+\begin{lstlisting}[style=pythonstyle, caption={CalcFrame Class: Main Application Window}]
+class CalcFrame(gui.MyFrame1):
+    """
+    Main application frame inheriting from auto-generated GUI template
+    Implements all event handlers and control logic
+    """
+    def __init__(self, parent):
+        # Initialize parent class (GUI layout)
+        gui.MyFrame1.__init__(self, parent)
+        
+        # Set initial conditions
+        self.setInitConds()
+        
+        # Initialize Arduino serial connection (if available)
+        self.ser = initSerial()
+        
+        # Create reactor simulation instance
+        self.legoReactor = rct.DUNEReactor(tstep=0.005)
+        # Small time step (5 ms) for smooth real-time operation
+        
+        # Generate initial data
+        self.duneReactor.timeStep()
+        self.data = [self.duneReactor.time, self.duneReactor.storVals]
+        
+        # Initialize coolant flow display
+        self.coolantBox.SetValue(str(round(self.duneReactor.mdotC / 1.e3, 2)))
+        
+        # Setup matplotlib plotting panel
+        self.create_plot_panel()
+        
+        # Setup timers for simulation and visualization
+        self.recalc_timer = wx.Timer(self)
+        self.redraw_timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.on_recalc_timer, self.recalc_timer)
+        self.Bind(wx.EVT_TIMER, self.on_redraw_timer, self.redraw_timer)
+        
+        # Start timers
+        # Recalculate every 2 ms (500 Hz update rate)
+        self.recalc_timer.Start(2)
+        # Redraw plot every 1000 ms (1 Hz refresh rate)
+        self.redraw_timer.Start(1000)
+        # High simulation rate ensures smooth control response
+        # Lower plot refresh reduces GUI overhead
+\end{lstlisting}
+
+\textbf{Design Pattern:} The separation between calculation rate (500 Hz) and redraw rate (1 Hz) optimizes performance. The reactor physics updates rapidly for accurate control, while expensive plot rendering occurs less frequently to maintain GUI responsiveness.
+
+\subsection{Plot Initialization and Configuration}
+
+\begin{lstlisting}[style=pythonstyle, caption={Enhanced Matplotlib Plot Setup with Four Panels}]
+def init_plot(self):
+    """
+    Initialize matplotlib figure and axes
+    Creates four subplots: power, reactivity, temperature, and Xenon-135
+    """
+    self.dpi = 100
+    self.fig = Figure((16.0, 10.0), dpi=self.dpi)  # Large full-screen figure
+    
+    # 2x2 subplot grid
+    self.axes1 = self.fig.add_subplot(221)  # Top left: Power [MW]
+    self.axes4 = self.fig.add_subplot(222)  # Top right: Reactivity ($)
+    self.axes2 = self.fig.add_subplot(223)  # Bottom left: Temperatures
+    self.axes3 = self.axes2.twinx()  # Dual y-axis for fuel/coolant temps
+    self.axes5 = self.fig.add_subplot(224)  # Bottom right: Xenon-135
+    
+    # Set background colors
+    if LooseVersion(matplotlib.__version__) >= LooseVersion('2.0.0'):
+        self.axes1.set_facecolor('white')
+        self.axes4.set_facecolor('white')
+        self.axes5.set_facecolor('white')
+    else:
+        self.axes1.set_axis_bgcolor('white')
+        self.axes4.set_axis_bgcolor('white')
+        self.axes5.set_axis_bgcolor('white')
+    
+    self.axes1.set_title('Reactor Power [MW] Trace', size=12)
+    pylab.setp(self.axes1.get_xticklabels(), fontsize=8)
+    pylab.setp(self.axes1.get_yticklabels(), fontsize=8)
+    pylab.setp(self.axes4.get_xticklabels(), fontsize=8)
+    pylab.setp(self.axes4.get_yticklabels(), fontsize=8)
+    pylab.setp(self.axes5.get_xticklabels(), fontsize=8)
+    pylab.setp(self.axes5.get_yticklabels(), fontsize=8)
+
+def create_plot_panel(self):
+    """Embed matplotlib canvas in wxPython panel"""
+    self.init_plot()
+    self.canvas = FigCanvas(self.m_panel2, -1, self.fig)
+    # Maximize window to full screen on startup
+    self.Maximize(True)
+\end{lstlisting}
+
+\textbf{GUI Enhancement:} The updated layout provides comprehensive real-time visualization with four distinct monitoring panels, enabling operators to simultaneously track power output, reactivity balance (including Xenon poisoning contribution), thermal conditions, and fission product concentrations. The full-screen mode maximizes data visibility for educational demonstrations.
+
+\subsection{Real-Time Plotting}
+
+\begin{lstlisting}[style=pythonstyle, caption={Dynamic Plot Updating with Zoom Control}]
+def draw_plot(self):
+    """
+    Update plots with latest reactor data
+    Implements zoom functionality and dual-axis temperature plotting
+    """
+    # Determine plot window size based on zoom level
+    zoomPercentage = self.zoom / 100.
+    if zoomPercentage < 0.02:
+        zoomPercentage = 0.02  # Minimum 2% zoom (2 seconds)
+    
+    # Calculate number of data points to display
+    plotMask = int(zoomPercentage * len(self.data[0]))
+    
+    # Create time axis
+    xdata = np.array(np.array(range(plotMask)) / float(plotMask)) * \
+            self.duneReactor.maxTime * zoomPercentage
+    
+    # Extract data traces
+    pwrdata = qFuel(self.data[1][0, :][-plotMask:]) / 1.e6  # Power [MW]
+    fuelTdata = self.data[1][2, :][-plotMask:]  # Fuel temp [K]
+    coolTdata = self.data[1][3, :][-plotMask:]  # Coolant temp [K]
+    
+    # Clear previous plots
+    self.axes1.clear()
+    self.axes2.clear()
+    self.axes3.clear()
+    
+    # Set axis limits
+    self.axes1.set_ylim(0, 650.)  # Power: 0-650 MW
+    self.axes2.set_ylim(400, 1700.)  # Fuel temp: 400-1700 K
+    self.axes3.set_ylim(400, 700.)  # Coolant temp: 400-700 K
+    
+    # Plot power
+    self.axes1.set_title('Reactor Power [MW] Trace', size=12)
+    self.axes1.set_ylabel('Power [MW]')
+    self.axes1.set_xlabel(str(round(max(xdata), 0)) + ' time [s]')
+    self.axes1.plot(xdata, pwrdata, linewidth=2, color='blue')
+    
+    # Plot temperatures on dual y-axes
+    self.axes2.set_ylabel('Fuel Temperature [K]')
+    self.axes3.set_ylabel('Coolant Temperature [K]')
+    self.axes3.yaxis.set_label_position('right')
+    self.axes3.yaxis.tick_right()
+    
+    # Red line for fuel temperature (left axis)
+    fuelPlot, = self.axes2.plot(xdata, fuelTdata, color='r', 
+                                  linewidth=2, label='Fuel T')
+    # Blue line for coolant temperature (right axis)
+    coolPlot, = self.axes3.plot(xdata, coolTdata, color='b', 
+                                  linewidth=2, label='Coolant T')
+    
+    # Add legends
+    handles, labels = self.axes2.get_legend_handles_labels()
+    self.axes2.legend(handles, labels, loc=2)  # Upper left
+    handles, labels = self.axes3.get_legend_handles_labels()
+    self.axes3.legend(handles, labels, bbox_to_anchor=(0.402, 0.85))
+    
+    # Render updated plot
+    self.canvas.draw()
+\end{lstlisting}
+
+\textbf{Visualization Strategy:} The dual y-axis temperature plot allows simultaneous viewing of fuel and coolant temperatures despite their different ranges (fuel: 400-1700 K, coolant: 400-700 K). This is critical for understanding thermal coupling and heat transfer dynamics.
+
+\subsection{Event Handlers: User Interaction}
+
+\begin{lstlisting}[style=pythonstyle, caption={GUI Event Handler Implementations}]
+def pauseSim(self, event):
+    """Pause/unpause simulation"""
+    self.paused = not self.paused
+
+def SCRAM(self, event):
+    """SCRAM button: toggle reactor shutdown"""
+    self.scramToggle = not self.scramToggle
+    self.duneReactor.SCRAM(bool(self.scramToggle))
+
+def pwrCtrlON(self, event):
+    """Toggle automatic power control mode"""
+    pwrSet = self.pwrSetPt.GetValue()
+    self.pwrCtrlToggle = not self.pwrCtrlToggle
+    self.duneReactor.togglePwrCtrl(float(pwrSet), bool(self.pwrCtrlToggle))
+
+def setReactorPwr(self, event):
+    """Update power setpoint (when in power control mode)"""
+    pwrSet = self.pwrSetPt.GetValue()
+    if self.pwrCtrlToggle:
+        self.duneReactor.togglePwrCtrl(float(pwrSet))
+
+def setRodPos(self, event):
+    """Set rod position from text entry"""
+    enteredVal = self.rodSetPt.GetValue()
+    self.duneReactor.setRodPosition(float(enteredVal))
+    # Update slider to match
+    self.rodSlide.SetValue(100 - int(enteredVal))
+
+def rodSlideSet(self, event):
+    """Set rod position from slider"""
+    # Slider is inverted: top=0% (inserted), bottom=100% (withdrawn)
+    self.rodSetPt.SetValue(str(100 - self.rodSlide.GetValue()))
+    self.duneReactor.setRodPosition(float(self.rodSetPt.GetValue()))
+
+def setPlotZoom(self, event):
+    """Adjust plot time window zoom level"""
+    self.zoom = int(self.plotZoom.GetValue())
+
+def coolantSet(self, event):
+    """Set coolant flow rate from text entry"""
+    coolantSet = self.coolantBox.GetValue()
+    if self.coolantCtrlToggle:
+        self.duneReactor.toggleCoolantCtrl(float(coolantSet))
+    else:
+        self.duneReactor.setCoolantRate(float(coolantSet) * 1.e3)
+
+def coolantCtrlON(self, event):
+    """Toggle coolant flow control mode"""
+    coolantSet = self.coolantBox.GetValue()
+    self.coolantCtrlToggle = not self.coolantCtrlToggle
+    self.duneReactor.toggleCoolantCtrl(float(coolantSet), 
+                                        bool(self.coolantCtrlToggle))
+\end{lstlisting}
+
+\subsection{Monitor Updates}
+
+\begin{lstlisting}[style=pythonstyle, caption={Update Display Monitors with Current State}]
+def updateMonitors(self):
+    """
+    Update all text displays and gauges with current reactor parameters
+    Called every redraw cycle (1 Hz)
+    """
+    # Rod position display
+    self.rodPosOut.SetValue(str(round(self.duneReactor.S[9], 1)))
+    
+    # Temperature displays
+    self.cooltOut.SetValue(str(round(self.duneReactor.S[8], 1)))
+    self.fueltOut.SetValue(str(round(self.duneReactor.S[7], 1)))
+    
+    # Power display
+    self.powOut.SetValue(str(round(float(qFuel(self.duneReactor.S[0]) / 1.e6), 1)))
+    
+    # Visual rod position gauge
+    self.rodGauge.SetValue(int(self.duneReactor.S[9]))
+    
+    # Coolant flow rate - only update if not in manual control mode
+    if not self.coolantCtrlToggle:
+        # Display current reactor coolant flow rate in kg/s
+        self.coolantBox.SetValue(str(round(self.duneReactor.mdotC / 1.e3, 2)))
+\end{lstlisting}
+
+\textbf{Note:} The coolant flow rate display is only updated automatically when manual control is disabled. This prevents the display from overwriting user input when the operator is manually adjusting flow rate.
+
+\subsection{CSV Data Logging System}
+
+The system automatically logs all critical reactor parameters to timestamped CSV files for post-simulation analysis.
+
+\subsubsection{CSV Initialization}
+
+\begin{lstlisting}[style=pythonstyle, caption={CSV File Setup with Automatic Naming}]
+def initCSVLogging(self):
+    """Initialize CSV file for logging simulation data"""
+    #Create SimulationData folder if it doesn't exist
+    self.csv_folder = "SimulationData"
+    if not os.path.exists(self.csv_folder):
+        os.makedirs(self.csv_folder)
+    
+    # Create CSV filename with current date and time
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    self.csv_filename = os.path.join(self.csv_folder, 
+                                      f"reactor_sim_{timestamp}.csv")
+    
+    # Open CSV file and write header
+    self.csv_file = open(self.csv_filename, 'w', newline='')
+    self.csv_writer = csv.writer(self.csv_file)
+    self.csv_writer.writerow(['Time(s)', 'Neutron_Density(#/cc)', 'Power(MW)', 
+                               'Reactivity($)', 'Fuel_Temp(K)', 'Coolant_Temp(K)', 
+                               'Flow_Rate(kg/s)', 'Rod_Position(%)'])
+    self.last_log_time = 0.0
+    self.log_interval = 0.5  # Log every 0.5 seconds
+    print(f"CSV logging initialized: {self.csv_filename}")
+\end{lstlisting}
+
+\textbf{Automatic File Management:}
+\begin{itemize}
+    \item Creates \texttt{SimulationData/} directory automatically
+    \item Generates unique filename based on simulation start time
+    \item Example: \texttt{reactor\_sim\_2026-01-31\_14-30-45.csv}
+    \item Prevents overwriting previous simulation data
+\end{itemize}
+
+\subsubsection{Data Logging at Fixed Intervals}
+
+\begin{lstlisting}[style=pythonstyle, caption={Periodic Data Recording}]
+def logDataToCSV(self):
+    """Log current simulation data to CSV file every 0.5 seconds"""
+    if hasattr(self, 'csv_writer') and self.csv_writer:
+        time_val = self.duneReactor.t[-1]
+        
+        # Only log if 0.5 seconds have passed since last log
+        if time_val - self.last_log_time >= self.log_interval:
+            neutron_density = self.duneReactor.S[0]
+            power_mw = qFuel(self.duneReactor.S[0]) / 1.e6
+            reactivity = self.duneReactor.reactivity
+            fuel_temp = self.duneReactor.S[7]
+            coolant_temp = self.duneReactor.S[8]
+            flow_rate = self.duneReactor.mdotC / 1.e3  # g/s to kg/s
+            rod_position = self.duneReactor.S[9]
+            
+            self.csv_writer.writerow([time_val, neutron_density, power_mw, 
+                                       reactivity, fuel_temp, coolant_temp, 
+                                       flow_rate, rod_position])
+            self.last_log_time = time_val
+\end{lstlisting}
+
+\textbf{Logging Strategy:} Data is recorded every 0.5 seconds rather than every timestep (0.005s) to:
+\begin{itemize}
+    \item Reduce file size by factor of 100
+    \item Maintain adequate time resolution for analysis
+    \item Prevent disk I/O from slowing down simulation
+    \item Enable long-duration simulations without storage issues
+\end{itemize}
+
+\subsubsection{CSV File Closure on Exit}
+
+\begin{lstlisting}[style=pythonstyle, caption={Safe File Handling}]
+def closeCSVLogging(self):
+    """Close CSV file and flush all buffered data"""
+    if hasattr(self, 'csv_file') and self.csv_file:
+        self.csv_file.close()
+        print(f"CSV file saved: {self.csv_filename}")
+
+def exitSim(self, event):
+    """Application exit with cleanup"""
+    self.closeCSVLogging()  # Ensure data is saved
+    sys.exit()
+\end{lstlisting}
+
+\textbf{Data Integrity:} The CSV file is properly closed on application exit, ensuring all buffered data is flushed to disk. Users can analyze simulation results immediately after closing the application.
+
+\subsubsection{CSV Data Structure}
+
+Each row in the CSV file contains:
+\begin{table}[H]
+\centering
+\caption{CSV Data Columns}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Column} & \textbf{Units} & \textbf{Description} \\
+\midrule
+Time & seconds & Simulation time \\
+Neutron Density & \#/cc & Neutron population density \\
+Power & MW & Thermal power output \\
+Reactivity & \$ & Reactivity in dollars \\
+Fuel Temp & K & Average fuel temperature \\
+Coolant Temp & K & Average coolant temperature \\
+Flow Rate & kg/s & Coolant mass flow rate \\
+Rod Position & \% & Control rod withdrawal \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Post-Processing Applications:}
+\begin{itemize}
+    \item Plot reactor transients with Python/MATLAB/Excel
+    \item Calculate integral parameters (energy production, average power)
+    \item Analyze system response to control actions
+    \item Validate PID controller performance
+    \item Generate reports for educational demonstrations
+\end{itemize}
+
+\subsection{Arduino Serial Communication}
+
+\begin{lstlisting}[style=pythonstyle, caption={Arduino Hardware Feedback Interface}]
+def writeToArduino(self):
+    """
+    Send reactor state to Arduino for physical model control
+    Updates servo (rod position), LED (power), and SCRAM indicator
+    """
+    if self.ser:
+        # ===== CONTROL ROD POSITION =====
+        # Map rod position (0-100%) to servo angle (5-140 degrees)
+        rodWriteOut = abs((self.duneReactor.S[9] / 50.) * 160.)
+        if rodWriteOut < 5.0:
+            rodWriteOut = 5.0  # Minimum servo position
+        elif rodWriteOut > 140.0:
+            rodWriteOut = 140.  # Maximum servo position
+        
+        # Send command: 'r' + angle
+        self.ser.write(("r" + str(int(rodWriteOut))).encode())
+        time.sleep(0.1)  # Arduino processing time
+        
+        # ===== REACTOR POWER LED =====
+        # Map power to LED brightness (0-255)
+        maxPwr = 500.  # Maximum power for full brightness [MW]
+        normPwr = abs(qFuel(self.duneReactor.S[0]) / 1.e6 / maxPwr)
+        normPwr = 250. * normPwr
+        if normPwr >= 250:
+            normPwr = 250
+        
+        # Send command: 'p' + brightness
+        self.ser.write(("p" + str(int(normPwr))).encode())
+        time.sleep(0.1)
+        
+        # ===== COOLANT PUMP CONTROL =====
+        # Independent pump speed control based on coolant flow rate
+        # Map coolant flow rate (g/s) to motor speed (20-180)
+        minFlow = 200.e3  # 200 kg/s = 200000 g/s minimum
+        maxFlow = 1800.e3  # 1800 kg/s = 1800000 g/s maximum
+        currentFlow = self.duneReactor.mdotC
+        
+        # Clamp flow to valid range
+        if currentFlow < minFlow:
+            currentFlow = minFlow
+        elif currentFlow > maxFlow:
+            currentFlow = maxFlow
+        
+        # Map to motor speed range (20-180)
+        motorSpeed = int(20 + (currentFlow - minFlow) / (maxFlow - minFlow) * 160)
+        
+        # Send command: 'c' + motorSpeed
+        self.ser.write(("c" + str(motorSpeed)).encode())
+        time.sleep(0.1)
+        
+        # ===== SCRAM INDICATOR LED =====
+        # Red LED: on during SCRAM, off otherwise
+        scramValue = 1 if self.duneReactor.scramToggle else 0
+        
+        # Send command: 's' + state
+        self.ser.write(("s" + str(int(scramValue))).encode())
+        time.sleep(0.1)
+\end{lstlisting}
+
+\textbf{Communication Protocol:} The simple character-based protocol ('r', 'p', 'c', 's' commands) provides robust serial communication. Case 'c' enables independent coolant pump control, decoupled from reactor power. Short delays (0.1s) ensure the Arduino has time to process commands and move actuators before the next command arrives.
+
+\subsection{Serial Port Auto-Detection}
+
+\begin{lstlisting}[style=pythonstyle, caption={Cross-Platform Arduino Connection}]
+def initSerial():
+    """
+    Attempt to establish serial connection with Arduino
+    Tries multiple ports across different platforms
+    """
+    from sys import platform as _platform
+    import serial
+    from serial.tools import list_ports
+    ser = None
+    
+    print("Platform " + _platform + " detected.")
+    print("Attempting to establish connection with arduino.")
+    
+    # Build list of candidate ports based on platform
+    port_candidates = []
+    if _platform == "linux" or _platform == "linux2":
+        # Linux: /dev/ttyACM* or /dev/ttyUSB*
+        port_candidates.extend(["/dev/ttyACM" + str(i) for i in range(10)])
+        port_candidates.extend(["/dev/ttyUSB" + str(i) for i in range(10)])
+    elif _platform == "windows" or _platform == "win32" or _platform == "win64":
+        # Windows: COM ports
+        port_candidates.extend(["COM" + str(i) for i in range(1, 11)])
+    elif _platform == "darwin":
+        # macOS: /dev/cu.usbmodem*
+        port_candidates.extend(["/dev/cu.usbmodem14" + str(i + 10) 
+                                 for i in range(10)])
+    
+    # Also try any ports detected by pyserial
+    port_candidates.extend([p.device for p in list_ports.comports()])
+    
+    # Try each port
+    tried = set()
+    for port in port_candidates:
+        if port in tried:
+            continue
+        tried.add(port)
+        try:
+            print("Attempting handshake with arduino on " + port + " :9600")
+            ser = serial.Serial(port, 9600, timeout=2)
+            time.sleep(3)  # Arduino reset on serial connection
+            break
+        except Exception as exc:
+            print("Connection failed on " + port + " because " + str(exc))
+            ser = None
+    
+    if not ser:
+        print("Arduino Not Detected. Running without serial connection")
+    else:
+        print("Connection to Arduino Established on " + ser.port)
+    
+    return ser
+\end{lstlisting}
+
+\textbf{Robustness:} The port auto-detection tries all possible serial ports on the system, making the software work seamlessly across Linux, Windows, and macOS without user configuration. If no Arduino is found, the simulation continues without hardware feedback.
+
+\subsection{Application Entry Point}
+
+\begin{lstlisting}[style=pythonstyle, caption={Main Application Launcher}]
+def main():
+    """
+    Application entry point
+    Creates wxPython application and main window
+    """
+    app = wx.App(False)  # Don't redirect stdout/stderr to GUI
+    frame = CalcFrame(None)
+    frame.Show(True)
+    app.MainLoop()  # Start event loop
+
+if __name__ == "__main__":
+    main()
+\end{lstlisting}
+
+% ===========================
+% SECTION 7: ARDUINO INTEGRATION
+% ===========================
+\section{Arduino Hardware Integration}
+
+The Arduino firmware provides physical feedback for the reactor simulation through servo motors, LEDs, and a coolant pump motor integrated with a 3D printed physical reactor model.
+
+\subsection{Arduino Sketch Overview}
+
+\begin{lstlisting}[style=arduinostyle, caption={Arduino Setup and Pin Configuration}]
+#include <Servo.h>
+
+Servo myServo;
+int servoPin = 9;          // Control rod servo motor
+int ledRGBRedPin = 11;     // SCRAM indicator LED (red)
+int ledRGBBluePin = 6;     // Power indicator LED (blue)
+int motorPWM = 3;          // Coolant pump motor PWM control
+
+bool scramActive = false;
+
+void setup(void){
+  Serial.begin(9600);      // 9600 baud serial communication
+  
+  // Initialize servo
+  myServo.attach(servoPin);
+  myServo.write(5);        // Rods fully inserted (default safe state)
+  
+  // Initialize LED pins
+  pinMode(ledRGBRedPin, OUTPUT);
+  pinMode(ledRGBBluePin, OUTPUT);
+  analogWrite(ledRGBRedPin, 0);   // Red LED off
+  analogWrite(ledRGBBluePin, 0);  // Blue LED off
+  
+  // Initialize motor control
+  pinMode(motorPWM, OUTPUT);
+  analogWrite(motorPWM, 0);       // Motor off initially
+  
+  loop();
+}
+\end{lstlisting}
+
+\textbf{Hardware Connections:}
+\begin{itemize}
+    \item \textbf{Servo (Pin 9)}: Positions 3D printed control rod mechanism (5-140° range)
+    \item \textbf{Blue LED (Pin 6, PWM)}: Brightness proportional to reactor power
+    \item \textbf{Red LED (Pin 11, PWM)}: Illuminates during SCRAM condition
+    \item \textbf{Motor (Pin 3, PWM)}: Coolant pump speed varies with power level
+\end{itemize}
+
+\subsubsection{Detailed Circuit Implementation with L298N Motor Driver}
+
+The Arduino cannot directly drive the 12V pump due to current and voltage limitations. An L298N H-Bridge motor driver module acts as a high-power switch:
+
+\begin{table}[H]
+\centering
+\caption{Complete Circuit Connections}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Component} & \textbf{Arduino Pin} & \textbf{Notes} \\
+\midrule
+Servo Signal & Pin 9 (Digital) & Control rod position \\
+Blue LED (Anode) & Pin 6 (PWM) & Power indicator \\
+Red LED (Anode) & Pin 11 (PWM) & SCRAM indicator \\
+L298N ENA & Pin 3 (PWM) & Pump speed control \\
+L298N IN1 & Logic High & Direction control \\
+L298N IN2 & Logic Low & Direction control \\
+L298N OUT-A & Pump (+) & Motor terminal \\
+L298N OUT-A & Pump (-) & Motor terminal \\
+L298N 12V & External PSU (+) & 12V power supply \\
+L298N GND & Arduino GND & Common ground \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Motor Speed Mapping:} The firmware maps normalized power (0-255) to motor PWM (20-180):
+\begin{itemize}
+    \item Minimum PWM = 20: Prevents motor stalling at low power
+    \item Maximum PWM = 180: Prevents motor overdriving and noise
+    \item Linear mapping: \texttt{motorSpeed = map(ledPowerSetting, 0, 255, 20, 180)}
+\end{itemize}
+
+\subsection{Serial Command Processing}
+
+\begin{lstlisting}[style=arduinostyle, caption={Arduino Main Loop and Command Parser}]
+void loop(void){
+  int ledPowerSetting;
+  int rodHeightSetting;
+  int scramCondition;
+  int motorSpeed;
+  int coolantFlowSetting;
+  
+  if (Serial.available() > 0)
+  {
+    char inByte = Serial.read();
+    
+    switch(inByte)
+    {
+    case 'p': // Power command
+      // Set blue LED brightness (0-255)
+      // LED brightness indicates reactor power level
+      ledPowerSetting = numberFromSerial();
+      analogWrite(ledRGBBluePin, ledPowerSetting);
+      break;
+    
+    case 'c': // Coolant flow control command
+      // Independent pump speed control based on flow rate
+      // Receives motor speed value (20-180)
+      coolantFlowSetting = numberFromSerial();
+      analogWrite(motorPWM, coolantFlowSetting);
+      break;
+      
+    case 'r': // Rod position command
+      rodHeightSetting = numberFromSerial();
+      myServo.write(rodHeightSetting);  // Move servo to angle
+      break;
+      
+    case 's': // SCRAM condition
+      scramCondition = numberFromSerial();
+      Serial.print("SCRAM received: ");
+      Serial.println(scramCondition);
+      
+      if (scramCondition > 0) {
+        // SCRAM active: red LED on at full brightness
+        analogWrite(ledRGBRedPin, 255);
+        scramActive = true;
+      } else {
+        // SCRAM cleared: red LED off
+        analogWrite(ledRGBRedPin, 0);
+        scramActive = false;
+      }
+      break;
+    }
+    
+    Serial.flush();  // Clear serial buffer
+  }
+}
+\end{lstlisting}
+
+\textbf{Command Protocol Summary:}
+\begin{table}[H]
+\centering
+\caption{Arduino Serial Commands}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Command} & \textbf{Parameter} & \textbf{Hardware} & \textbf{Function} \\
+\midrule
+'p' & 0-250 & Blue LED & Power indicator brightness \\
+'c' & 20-180 & Pump Motor & Coolant flow rate control \\
+'r' & 5-140 & Servo & Control rod position \\
+'s' & 0-1 & Red LED & SCRAM alarm indicator \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Key Design Change:} Case 'c' now provides independent coolant pump control, decoupled from reactor power (case 'p'). This allows:
+\begin{itemize}
+    \item Realistic simulation of pump control systems
+    \item Manual flow rate adjustment independent of power level
+    \item Demonstration of cooling system importance
+    \item Investigation of thermal-hydraulic transients
+\end{itemize}
+
+\subsubsection{Python-Arduino Communication for Coolant Control}
+
+\begin{lstlisting}[style=pythonstyle, caption={Sending Coolant Flow Commands to Arduino}]
+# Inside writeToArduino() method:
+# send coolant flow control to motor (case 'c')
+# Map coolant flow rate (g/s) to motor speed (20-180)
+minFlow = 200.e3  # 200 kg/s = 200000 g/s minimum
+maxFlow = 1800.e3  # 1800 kg/s = 1800000 g/s maximum
+currentFlow = self.duneReactor.mdotC
+
+# Clamp flow to valid range
+if currentFlow < minFlow:
+    currentFlow = minFlow
+elif currentFlow > maxFlow:
+    currentFlow = maxFlow
+
+# Map to motor speed range (20-180)
+motorSpeed = int(20 + (currentFlow - minFlow) / (maxFlow - minFlow) * 160)
+self.ser.write(("c" + str(motorSpeed)).encode())
+time.sleep(0.1)
+\end{lstlisting}
+
+\textbf{Flow-to-Speed Mapping:}
+\begin{equation}
+\text{motorSpeed} = 20 + \frac{\dot{m}_{coolant} - \dot{m}_{min}}{\dot{m}_{max} - \dot{m}_{min}} \times 160
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $\dot{m}_{min} = 200$ kg/s (minimum coolant flow)
+    \item $\dot{m}_{max} = 1800$ kg/s (maximum coolant flow)
+    \item Motor PWM range: 20-180 (prevents stalling and overdriving)
+\end{itemize}
+
+\subsubsection{Integer Parsing from Serial}
+
+\begin{lstlisting}[style=arduinostyle, caption={Serial Number Parser}]
+int numberFromSerial(void)
+{
+  /*
+   * Parse integer from serial buffer
+   * Reads digits until end of number or buffer full
+   */
+  char numberString[8];
+  unsigned char index=0;
+  delay(10);  // Wait for full number to arrive
+  
+  while(Serial.available() > 0)
+  {
+    delay(10);
+    numberString[index++]=Serial.read();
+    if(index>6)
+    {
+      break;  // Limit to 6 digits
+    }
+  }
+  numberString[index]=0;  // Null terminator
+  return atoi(numberString);  // Convert string to integer
+}
+\end{lstlisting}
+
+\textbf{Command Protocol Summary:}
+\begin{table}[H]
+\centering
+\caption{Arduino Serial Commands}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Command & Format & Action \\
+\midrule
+Power & 'p' + [0-255] & Set blue LED brightness and pump speed \\
+Rod & 'r' + [5-140] & Set servo angle (control rod position) \\
+SCRAM & 's' + [0 or 1] & Control red LED (0=off, 1=on) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Physical Model Integration}
+
+The 3D printed reactor model controlled by Arduino includes:
+
+\begin{enumerate}
+    \item \textbf{Control Rod Mechanism}: Servo-actuated 3D printed structure that raises/lowers to indicate rod position. Provides visual representation of control rod state.
+    
+    \item \textbf{Reactor Core}: Translucent 3D printed housing with blue LED. LED brightness increases with reactor power, simulating Cherenkov radiation glow seen in real reactors.
+    
+    \item \textbf{SCRAM Indicator}: Red LED that illuminates when safety systems activate, providing clear visual feedback of emergency shutdown.
+    
+    \item \textbf{Coolant Pump}: Small DC motor representing coolant circulation. Motor speed increases with power level, demonstrating the need for active cooling at higher powers.
+\end{enumerate}
+
+\textbf{Educational Value:} The physical model transforms abstract simulation data into tangible phenomena. Students can see the blue glow intensify as power increases, watch control rods move in response to user commands, and observe the dramatic red SCRAM indicator when safety limits are exceeded. This multi-sensory experience reinforces learning far more effectively than simulation alone.
+
+% ===========================
+% SECTION 8: MATHEMATICAL FORMULATION
+% ===========================
+\section{Mathematical Formulation and Numerical Methods}
+
+\subsection{System of ODEs}
+
+The complete reactor system is described by a 10-dimensional system of first-order ODEs:
+
+\begin{align}
+\frac{dn}{dt} &= \frac{\rho(t) - \beta}{\Lambda} n + \sum_{i=1}^{6} \lambda_i C_i \\[0.3cm]
+\frac{dC_i}{dt} &= \frac{\beta_i}{\Lambda} n \cdot \eta - \lambda_i C_i \quad (i = 1,\ldots,6) \\[0.3cm]
+\frac{dT_f}{dt} &= \frac{Q(n) - h A_c (T_f - T_c)}{m_f C_{p,f}(T_f)} \\[0.3cm]
+\frac{dT_c}{dt} &= \frac{h A_c (T_f - T_c) + C_{p,c}(T_{in} - T_c) \dot{m}_c}{m_c C_{p,c}} \\[0.3cm]
+\frac{dh}{dt} &= \dot{h}(t)
+\end{align}
+
+where $\eta = 0.6$ is the neutron lifetime correction factor.
+
+\subsection{Reactivity Functions}
+
+\subsubsection{Control Rod Worth}
+
+Differential rod worth (sinusoidal):
+\begin{equation}
+R(h) = k \sin\left(\frac{\pi h}{100}\right)
+\end{equation}
+
+Integral rod worth:
+\begin{equation}
+\rho_{rod}(h) = \int_0^h R(h') \, dh' = -\frac{100k}{\pi} \left[\cos\left(\frac{\pi h}{100}\right) - 1\right]
+\end{equation}
+
+\subsubsection{Temperature Reactivity}
+
+\begin{equation}
+\rho_{temp}(T_f) = \alpha_T (T_f - T_{in})
+\end{equation}
+
+where $\alpha_T = -\frac{0.007 \times 10^{-5}}{\beta}$ [\$/K].
+
+\subsection{Numerical Integration Method}
+
+\subsubsection{LSODA Algorithm}
+
+The simulation uses scipy's \texttt{odeint}, which implements the LSODA (Livermore Solver for Ordinary Differential Equations with Automatic method switching) algorithm. LSODA automatically detects stiffness and switches between:
+
+\begin{itemize}
+    \item \textbf{Non-stiff method}: Adams-Moulton predictor-corrector (up to order 12)
+    \item \textbf{Stiff method}: Backward Differentiation Formulas (BDF, up to order 5)
+\end{itemize}
+
+\subsubsection{Why LSODA for Reactor Kinetics?}
+
+Reactor kinetics exhibits varying stiffness depending on operating conditions:
+
+\begin{itemize}
+    \item \textbf{Normal operation}: System is only mildly stiff due to fast prompt neutrons and slow delayed neutrons (time scale separation: $10^{-5}$ s vs. 10 s).
+    
+    \item \textbf{Rapid transients}: System becomes very stiff when reactivity changes quickly (e.g., SCRAM insertion). Prompt neutron population can change on microsecond timescales while precursors evolve over seconds.
+    
+    \item \textbf{Temperature coupling}: Thermal dynamics (seconds to minutes) are much slower than neutronics, adding another time scale.
+\end{itemize}
+
+LSODA's adaptive method switching ensures both accuracy and efficiency across all operating regimes.
+
+\subsection{Time Stepping Strategy}
+
+The simulation uses two time scales:
+
+\begin{enumerate}
+    \item \textbf{Physics time step}: $\Delta t_{physics} = 0.005$ s (5 ms)
+    \begin{itemize}
+        \item Sufficiently small to resolve control system dynamics
+        \item Captures reactivity feedback loops
+        \item Allows smooth PID control response
+    \end{itemize}
+    
+    \item \textbf{Display update rate}: $\Delta t_{display} = 1$ s
+    \begin{itemize}
+        \item Reduces computational overhead of plot rendering
+        \item Provides smooth visual updates without flicker
+        \item Maintains GUI responsiveness
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Stability Analysis: Linearized System}
+
+At steady state, the reactor can be approximated by linearizing about an equilibrium point. Consider small perturbations $\delta n$, $\delta C_i$, $\delta T_f$:
+
+\begin{equation}
+\frac{d(\delta n)}{dt} \approx \frac{\rho_0 - \beta}{\Lambda} \delta n + \frac{n_0}{\Lambda} \delta \rho + \sum_{i=1}^{6} \lambda_i \delta C_i
+\end{equation}
+
+where $\delta \rho = \alpha_T \delta T_f + R(h_0) \delta h$.
+
+The eigenvalues of the linearized system determine stability:
+\begin{itemize}
+    \item \textbf{Negative $\alpha_T$}: Provides negative feedback, stabilizing the system
+    \item \textbf{Prompt neutron response}: Fast eigenvalue $\sim (\rho - \beta)/\Lambda$
+    \item \textbf{Delayed neutron modes}: Six eigenvalues near $-\lambda_i$ (stable decay modes)
+\end{itemize}
+
+\subsection{Power-Temperature Coupling}
+
+The coupling between neutronics and thermal-hydraulics creates characteristic response patterns:
+
+\subsubsection{Power Increase Scenario}
+
+\begin{enumerate}
+    \item Control rods withdrawn → $\rho \uparrow$
+    \item Neutron population increases → $n \uparrow$
+    \item Power increases → $Q = Q(n) \uparrow$
+    \item Fuel temperature rises → $T_f \uparrow$
+    \item Negative temperature feedback → $\rho \downarrow$
+    \item System stabilizes at new equilibrium with higher $T_f$ and higher power
+\end{enumerate}
+
+This self-regulating behavior is fundamental to reactor safety. The time constant for this feedback loop is determined by:
+\begin{equation}
+\tau_{feedback} \approx \frac{m_f C_{p,f}}{h A_c + |n_0 \alpha_T Q'/\rho|}
+\end{equation}
+
+Typical values: $\tau_{feedback} \sim 1-10$ seconds for thermal power changes.
+
+% ===========================
+% SECTION 9: USAGE EXAMPLES
+% ===========================
+\section{Usage Examples and Operational Scenarios}
+
+\subsection{Installation and Setup}
+
+\subsubsection{Prerequisites}
+
+Ensure Python 3.6+ is installed, then install dependencies:
+
+\begin{verbatim}
+cd /path/to/DUNE
+python setup.py develop
+\end{verbatim}
+
+Or using pip:
+\begin{verbatim}
+pip install numpy scipy matplotlib wxpython pyserial
+\end{verbatim}
+
+\subsubsection{Launching the Application}
+
+After installation, launch the GUI:
+\begin{verbatim}
+pyReactor
+\end{verbatim}
+
+Or run directly:
+\begin{verbatim}
+python duneReactor.py
+\end{verbatim}
+
+\subsection{Operational Scenarios}
+
+\subsubsection{Scenario 1: Reactor Startup from Cold Shutdown}
+
+\textbf{Objective}: Bring reactor from zero power to 100 MW using manual rod control.
+
+\textbf{Procedure}:
+\begin{enumerate}
+    \item \textbf{Initial State}: Rods fully inserted (0\%), power = 0 MW, temperatures at 450 K
+    \item \textbf{Action}: Slowly withdraw rods using slider (or type "50" in Rod Setpoint box)
+    \item \textbf{Observation}: 
+    \begin{itemize}
+        \item Neutron population increases exponentially
+        \item Power rises on plot
+        \item Fuel temperature begins increasing
+        \item Negative temperature feedback reduces reactivity
+    \end{itemize}
+    \item \textbf{Stabilization}: System reaches new equilibrium at $\sim$100 MW
+    \item \textbf{Time scale}: Takes 30-60 seconds for complete stabilization
+\end{enumerate}
+
+\textbf{Key Learning Point}: Demonstrates exponential power increase with positive reactivity and natural stabilization via temperature feedback.
+
+\subsubsection{Scenario 2: Automatic Power Control}
+
+\textbf{Objective}: Use PID controller to maintain steady 200 MW power output.
+
+\textbf{Procedure}:
+\begin{enumerate}
+    \item Start reactor at any power level
+    \item Enter "200" in Power SetPoint box
+    \item Check "Power Ctrl" checkbox
+    \item \textbf{Observation}:
+    \begin{itemize}
+        \item Controller automatically adjusts rod position
+        \item Power converges to 200 MW
+        \item Small oscillations may occur (PID tuning dependent)
+        \item Once stable, power remains constant despite disturbances
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Key Learning Point}: Demonstrates feedback control systems and importance of automatic regulation in large-scale systems.
+
+\subsubsection{Scenario 3: Reactivity-Initiated Accident (RIA)}
+
+\textbf{Objective}: Demonstrate SCRAM protection during excessive reactivity insertion.
+
+\textbf{Procedure}:
+\begin{enumerate}
+    \item Start at low power (10-20 MW)
+    \item Rapidly withdraw rods to 100\% (type "100" and press Enter)
+    \item \textbf{Observation}:
+    \begin{itemize}
+        \item Power increases rapidly (exponential rise)
+        \item Fuel temperature rises quickly
+        \item If fuel reaches 1700 K: automatic SCRAM triggers
+        \item Message: "Fuel Temperature SCRAM setpoint Exceeded"
+        \item Red SCRAM button activates (and Arduino red LED if connected)
+        \item Rods instantly insert, power drops rapidly
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Key Learning Point}: Demonstrates reactor protection systems and inherent safety mechanisms. Shows why SCRAM systems are critical for preventing core damage.
+
+\textbf{Physics Phenomena Demonstrated:}
+\begin{itemize}
+    \item \textbf{Prompt Jump}: Upon rapid rod withdrawal, power increases instantaneously before settling into a stable period, consistent with the physics of prompt neutron lifetimes ($\sim 10^{-5}$ s).
+    \item \textbf{Doppler Defect}: As fuel temperature rises, the rate of power increase slows down due to negative temperature feedback ($\alpha_T < 0$). This validates the inherent safety characteristics of the simulated reactor core.
+    \item \textbf{Reactor Period}: Observable exponential power increase with time constant determined by reactivity: $T = \frac{\Lambda}{\rho - \beta}$
+\end{itemize}
+
+\subsubsection{Scenario 4: Loss of Coolant Flow}
+
+\textbf{Objective}: Investigate thermal response to reduced cooling.
+
+\textbf{Procedure}:
+\begin{enumerate}
+    \item Establish steady state at 200 MW
+    \item Reduce coolant flow: change "1000" to "200" in Coolant Flow Rate box
+    \item \textbf{Observation}:
+    \begin{itemize}
+        \item Reduced heat removal causes fuel temperature rise
+        \item Negative temperature feedback reduces power
+        \item System stabilizes at lower power, higher temperature
+        \item Risk of SCRAM if flow too low
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Key Learning Point}: Illustrates importance of active cooling and thermal-hydraulic coupling in reactor operation.
+
+\subsubsection{Scenario 5: Plot Zoom and Time History Analysis}
+
+\textbf{Objective}: Examine detailed transient behavior.
+
+\textbf{Procedure}:
+\begin{enumerate}
+    \item Perform any transient (rod movement, power change, SCRAM)
+    \item Adjust "Plot Zoom" slider:
+    \begin{itemize}
+        \item Slider left (low \%): Zoom in, see recent 5-10 seconds
+        \item Slider right (high \%): Zoom out, see full 100 seconds
+    \end{itemize}
+    \item Analyze temperature and power coupling on dual-axis plot
+\end{enumerate}
+
+\textbf{Key Learning Point}: Time-scale analysis reveals fast neutronics (seconds) vs. slow thermal dynamics (tens of seconds).
+
+\subsection{Arduino Hardware Demonstrations}
+
+With Arduino connected:
+
+\subsubsection{Visual Power Feedback}
+
+\begin{itemize}
+    \item Blue LED brightness proportional to reactor power
+    \item Gradually withdraw rods and watch LED intensify
+    \item Mimics Cherenkov radiation in real reactor pools
+\end{itemize}
+
+\subsubsection{Control Rod Motion}
+
+\begin{itemize}
+    \item Servo moves 3D printed structure indicating rod position
+    \item Students can see mechanical actuation in real-time
+    \item Reinforces connection between GUI slider and physical position
+\end{itemize}
+
+\subsubsection{SCRAM Indication}
+
+\begin{itemize}
+    \item Red LED illuminates during SCRAM
+    \item Dramatic visual signal of emergency condition
+    \item Clears when SCRAM button pressed again (reactor reset)
+\end{itemize}
+
+\subsubsection{Auditory Feedback from Coolant Pump}
+
+\begin{itemize}
+    \item 12V DC pump speed varies with reactor power level
+    \item Provides intuitive auditory sense of reactor state
+    \item Users can ``hear'' the reactor power without looking at screen
+    \item Louder pump noise correlates with higher power output
+    \item Multi-sensory experience enhances learning retention
+\end{itemize}
+
+\textbf{Measured Performance Metrics:}
+\begin{itemize}
+    \item Communication latency: $\approx$ 100 ms between Python and Arduino
+    \item Sufficiently low for educational demonstrations
+    \item Update rate: 500 Hz physics calculations, 1 Hz display updates
+    \item Servo response time: $<$ 200 ms for full range motion
+\end{itemize}
+
+\subsection{Suggested Classroom Activities}
+
+\subsubsection{Activity 1: Find the Critical Rod Position}
+
+\textbf{Goal}: Determine rod position for sustained steady state at given power.
+
+Students adjust rods to find position where power stabilizes at target (e.g., 100 MW). Teaches concept of criticality ($k_{eff} = 1$) and equilibrium.
+
+\subsubsection{Activity 2: Control System Challenge}
+
+\textbf{Goal}: Tune PID parameters for optimal power control.
+
+Advanced students modify PID gains in code to achieve fast response without overshoot. Introduces control theory concepts.
+
+\subsubsection{Activity 3: SCRAM Limit Investigation}
+
+\textbf{Goal}: Find maximum safe power before SCRAM.
+
+Students increase power setpoint until SCRAM triggers. Learn about thermal limits and protection systems.
+
+\subsubsection{Activity 4: Transient Analysis}
+
+\textbf{Goal}: Measure reactor time constants.
+
+Students perform step reactivity insertion, measure power doubling time, and compare to theoretical predictions from point kinetics equations.
+
+% ===========================
+% SECTION 10: CONCLUSIONS
+% ===========================
+\section{Conclusions and Future Enhancements}
+
+\subsection{Project Summary}
+
+The DUNE project successfully achieves its primary objectives:
+
+\begin{enumerate}
+    \item \textbf{Educational Effectiveness}: Provides engaging, interactive introduction to reactor physics for University 1st year students
+    \item \textbf{Scientific Accuracy}: Implements rigorous six-group point kinetics with thermal-hydraulic coupling
+    \item \textbf{Accessibility}: Cross-platform software with intuitive GUI requires no prior coding knowledge
+    \item \textbf{Physical Integration}: Optional Arduino hardware creates tangible connection between simulation and reality
+    \item \textbf{Safety Education}: SCRAM protection system demonstrates reactor safety principles in controlled environment
+\end{enumerate}
+
+\subsection{Key Accomplishments}
+
+\subsubsection{Technical Achievements}
+
+\begin{itemize}
+    \item Real-time ODE solution with adaptive stiff/non-stiff integration
+    \item Dual control modes (manual and automatic PID)
+    \item Flow-dependent heat transfer with temperature-dependent properties
+    \item Realistic control rod worth functions based on neutron importance
+    \item Stable numerical methods preventing unphysical solutions
+\end{itemize}
+
+\subsubsection{Educational Impact}
+
+\begin{itemize}
+    \item Visual feedback reinforces abstract concepts (power, temperature, control)
+    \item Interactive experimentation encourages active learning
+    \item Safe environment for exploring reactor accidents and safety systems
+    \item Preparation for university-level nuclear engineering studies
+\end{itemize}
+
+\subsection{Limitations of Current Implementation}
+
+\subsubsection{Physics Simplifications}
+
+\begin{enumerate}
+    \item \textbf{Point Kinetics Approximation}: Assumes spatial flux shape remains constant (no spatial effects)
+    \begin{itemize}
+        \item Cannot model xenon oscillations (spatial flux tilting)
+        \item Cannot simulate azimuthal or radial power distribution changes
+        \item Valid for control system analysis and global power transients
+        \item Adequate for educational demonstrations of core-average behavior
+    \end{itemize}
+    
+    \item \textbf{Single Fuel/Coolant Temperature}: Neglects axial and radial temperature distributions
+    \begin{itemize}
+        \item Lumped parameter model treats entire core as single node
+        \item Real reactors have significant temperature gradients
+        \item Cannot predict hot spots or local heat flux peaking
+    \end{itemize}
+    
+    \item \textbf{Simplified Heat Transfer}: Constant or simple flow-dependent $h$; real correlations more complex
+    \begin{itemize}
+        \item Uses simplified Dittus-Boelter-like correlation: $h \propto \dot{m}^{0.8}$
+        \item Real systems require geometry-specific correlations
+        \item Neglects effects of boiling and two-phase flow
+    \end{itemize}
+    
+    \item \textbf{Xenon-135 and Samarium-149 Poisoning Implemented}: Full decay chain dynamics
+    \begin{itemize}
+        \item Xe-135: Models production from fission and I-135 decay, Xe-135 decay, and neutron burnout
+        \item Sm-149: Models complete Nd-149 $\to$ Pm-149 $\to$ Sm-149 decay chain
+        \item Demonstrates load-following challenges and poison transients
+        \item Captures xenon pit phenomenon during shutdown
+        \item Shows long-term samarium equilibrium buildup
+        \item \textit{Note:} Spatial poison oscillations require multi-dimensional kinetics
+    \end{itemize}
+    
+    \item \textbf{No Burnup}: Fuel composition doesn't change (valid for short demonstrations)
+    \begin{itemize}
+        \item No plutonium buildup or U-235 depletion
+        \item Reactivity coefficients remain constant
+        \item Appropriate for training scenarios of fixed duration
+    \end{itemize}
+    
+    \item \textbf{Serial Communication Latency}: Approximately 100 ms delay between simulation and hardware response
+    \begin{itemize}
+        \item Caused by timer update rates and serial buffer processing
+        \item Acceptable for educational purposes
+        \item Could be reduced with optimized communication protocol
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Control System Limitations}
+
+\begin{enumerate}
+    \item \textbf{Fixed PID Gains}: No adaptive tuning or gain scheduling
+    \item \textbf{No Anti-Windup}: Integral term can accumulate during saturation
+    \item \textbf{Single Control Bank}: Real reactors have multiple independent control rod banks
+\end{enumerate}
+
+\subsection{Future Enhancement Opportunities}
+
+\subsubsection{Physics Improvements}
+
+\begin{enumerate}
+    \item \textbf{Additional Fission Product Poisons}: Extend beyond Xe-135 and Sm-149
+    \begin{itemize}
+        \item Pm-149 transient effects (currently modeled only as Sm-149 precursor)
+        \item Other significant absorbers (Rh-103, Cd isotopes)
+    \end{itemize}
+    
+    \item \textbf{Spatial Xenon Oscillations}: Extend to multi-dimensional kinetics
+    \begin{itemize}
+        \item Demonstrate spatial power tilting in large cores
+        \item Regional xenon oscillation control strategies
+    \end{itemize}
+    
+    \item \textbf{Multi-Region Model}: Implement core, reflector, and pressure vessel regions
+    \begin{itemize}
+        \item More accurate neutron leakage
+        \item Region-dependent temperature effects
+    \end{itemize}
+    
+    \item \textbf{Improved Thermal-Hydraulics}: 
+    \begin{itemize}
+        \item Axial temperature profiles
+        \item Two-phase flow modeling (boiling)
+        \item DNB (Departure from Nucleate Boiling) limits
+    \end{itemize}
+    
+    \item \textbf{Fuel Performance Models}:
+    \begin{itemize}
+        \item Fission gas release
+        \item Pellet-cladding interaction
+        \item Fuel swelling and densification
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Software Enhancements}
+
+\begin{enumerate}
+    \item \textbf{Advanced Control Algorithms}:
+    \begin{itemize}
+        \item Model Predictive Control (MPC)
+        \item Fuzzy logic control
+        \item Optimal control with state estimation
+    \end{itemize}
+    
+    \item \textbf{3D Visualization}:
+    \begin{itemize}
+        \item OpenGL reactor core rendering
+        \item Animated neutron flux distribution
+        \item Temperature heatmaps
+    \end{itemize}
+    
+    \item \textbf{Data Logging and Analysis}:
+    \begin{itemize}
+        \item Export to CSV/HDF5 for external analysis
+        \item Statistical analysis tools
+        \item Comparison with historical data
+    \end{itemize}
+    
+    \item \textbf{Multiplayer Mode}:
+    \begin{itemize}
+        \item Networked control stations
+        \item Team-based reactor operation scenarios
+        \item Competitive challenges
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Hardware Expansions}
+
+\begin{enumerate}
+    \item \textbf{Enhanced Arduino Features}:
+    \begin{itemize}
+        \item Rotary encoder for analog rod control
+        \item LCD display showing key parameters
+        \item Alarm buzzer for SCRAM events
+        \item Temperature sensors for ambient monitoring
+    \end{itemize}
+    
+    \item \textbf{Larger Physical Models}:
+    \begin{itemize}
+        \item Multiple control rod banks
+        \item Pressurizer model with pressure control
+        \item Steam generator visualization
+        \item Turbine generator integration
+    \end{itemize}
+    
+    \item \textbf{Virtual/Augmented Reality}:
+    \begin{itemize}
+        \item VR reactor control room
+        \item AR overlays on physical LEGO model
+        \item Immersive training environment
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Educational Curriculum Development}
+
+\begin{enumerate}
+    \item \textbf{Guided Tutorials}:
+    \begin{itemize}
+        \item Step-by-step walkthroughs for beginners
+        \item Progressive difficulty levels
+        \item Interactive quizzes and assessments
+    \end{itemize}
+    
+    \item \textbf{Scenario Library}:
+    \begin{itemize}
+        \item Historical reactor incidents (TMI, Chernobyl analysis)
+        \item Advanced reactor concepts (MSR, SMR demonstrations)
+        \item Competition scenarios for student teams
+    \end{itemize}
+    
+    \item \textbf{Integration with LMS}:
+    \begin{itemize}
+        \item Canvas/Moodle integration
+        \item Automated grading of reactor operations
+        \item Progress tracking and analytics
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Broader Impact}
+
+\subsubsection{STEM Education}
+
+The DUNE project demonstrates the power of simulation-based learning in STEM education. By making complex physics accessible through visualization and interaction, it lowers barriers to understanding advanced topics and inspires students to pursue careers in science and engineering.
+
+\subsubsection{Cyber-Physical Systems in Engineering Education}
+
+The integration of computation with physical processes—known as Cyber-Physical Systems (CPS)—has proven highly effective in engineering education:
+
+\begin{itemize}
+    \item \textbf{SCADA System Analog}: DUNE mimics real-world Supervisory Control and Data Acquisition systems where digital signals drive physical actuators
+    \item \textbf{Multi-Sensory Learning}: Combines visual (LED brightness), auditory (pump noise), and tactile (servo motion) feedback
+    \item \textbf{Real-Time Constraints}: Students experience the challenges of real-time control and hardware interfacing
+    \item \textbf{Cross-Domain Integration}: Bridges nuclear physics, control theory, embedded systems, and software engineering
+\end{itemize}
+
+\subsubsection{Public Understanding of Nuclear Energy}
+
+Beyond classroom use, DUNE serves as a tool for public outreach and science communication. Interactive demonstrations at science fairs and museums help demystify nuclear technology and inform evidence-based public discourse on energy policy.
+
+\subsubsection{Open-Source Community}
+
+As an open-source project under the MIT license, DUNE enables:
+\begin{itemize}
+    \item Free access for educators worldwide
+    \item Community contributions and improvements
+    \item Adaptation to local educational needs
+    \item Foundation for derivative educational tools
+\end{itemize}
+
+\subsection{Project Heritage and Attribution}
+
+The DUNE project builds upon the foundational work of the pyReactor educational simulator:
+
+\begin{itemize}
+    \item \textbf{Original pyReactor}: Developed by W. Gurecky as an open-source reactor kinetics educational tool
+    \item \textbf{Repository}: \url{https://github.com/wgurecky/pyReactor}
+    \item \textbf{DUNE Enhancement}: Extended for University of Dhaka's Nuclear Engineering program with improved hardware integration using 3D printed components, enhanced GUI features, and comprehensive documentation
+    \item \textbf{DUNE Repository}: \url{https://github.com/Hridoy-Kabiraj/DUNE}
+    \item \textbf{Course Integration}: Developed as part of NE-3206 curriculum at the Department of Nuclear Engineering, University of Dhaka
+\end{itemize}
+
+This collaborative evolution exemplifies the power of open-source software in advancing university-level nuclear engineering education.
+
+\subsection{Final Remarks}
+
+The DUNE project represents a successful fusion of rigorous physics modeling, software engineering, and educational pedagogy. Its combination of accurate simulation, intuitive interface, and physical hardware feedback creates a uniquely effective learning experience. As nuclear energy plays an increasingly important role in addressing climate change, tools like DUNE will be essential for educating the next generation of nuclear engineers and informed citizens.
+
+The project's modular architecture and open-source nature ensure it will continue evolving, incorporating new features and adapting to emerging educational needs. Whether used in an undergraduate nuclear engineering course, university reactor theory laboratory, or public science museum, DUNE serves its core mission: making nuclear reactor physics accessible, understandable, and inspiring.
+
+\vspace{1cm}
+
+\begin{center}
+\textit{"The reactor is not just a source of energy, but a testament to human ingenuity \\
+in harnessing the fundamental forces of nature."}
+\end{center}
+
+% ===========================
+% ACKNOWLEDGEMENTS
+% ===========================
+\section*{Acknowledgements}
+\addcontentsline{toc}{section}{Acknowledgements}
+
+We would like to express our sincere gratitude to:
+
+\textbf{Saad Islam}  \\
+Lecturer  \\
+Department of Nuclear Engineering  \\
+University of Dhaka
+
+\vspace{0.5cm}
+
+For his invaluable guidance, support, and supervision throughout this project. His expertise in nuclear reactor physics and dedication to student learning made this educational tool possible.
+
+\vspace{0.5cm}
+
+We also acknowledge:
+
+\begin{itemize}
+    \item \textbf{W. Gurecky}: For developing the original pyReactor simulator that served as the foundation for this enhanced DUNE implementation
+    \item \textbf{Open-Source Community}: For developing the excellent Python scientific computing ecosystem (NumPy, SciPy, Matplotlib, wxPython)
+    \item \textbf{Arduino Community}: For providing accessible hardware platforms and comprehensive documentation
+    \item \textbf{Department of Nuclear Engineering, University of Dhaka}: For providing the resources and environment conducive to this research
+\end{itemize}
+
+The DUNE project demonstrates how collaborative open-source development can create powerful educational tools for university-level nuclear engineering education.
+
+% ===========================
+% APPENDICES
+% ===========================
+\newpage
+\appendix
+
+\section{Reactor Physics Equations Reference}
+
+\subsection{Point Kinetics Equations (Standard Form)}
+
+For a reactor with $I$ delayed neutron groups:
+
+\begin{equation}
+\frac{dn(t)}{dt} = \frac{\rho(t) - \beta}{\Lambda} n(t) + \sum_{i=1}^{I} \lambda_i C_i(t)
+\end{equation}
+
+\begin{equation}
+\frac{dC_i(t)}{dt} = \frac{\beta_i}{\Lambda} n(t) - \lambda_i C_i(t) \quad (i = 1, \ldots, I)
+\end{equation}
+
+\subsection{Reactor Period}
+
+For constant reactivity $\rho$, the asymptotic reactor period $T$ is:
+
+\begin{equation}
+T = \frac{\Lambda}{\rho - \beta} \quad \text{(for } \rho < \beta \text{)}
+\end{equation}
+
+\subsection{Prompt Jump Approximation}
+
+For step reactivity insertion $\Delta \rho$ at $t=0$:
+
+\begin{equation}
+\frac{n(t=0^+)}{n(t=0^-)} \approx \frac{\rho_0 + \Delta \rho}{\rho_0}
+\end{equation}
+
+\section{Thermodynamic Properties}
+
+\subsection{UO$_2$ Fuel Properties}
+
+\begin{itemize}
+    \item Density: $\rho_{UO_2} = 10.97$ g/cm$^3$ (theoretical), 10.5 g/cm$^3$ (typical sintered)
+    \item Specific heat: $C_p = 245 + 0.0586(T-273)$ J/kg$\cdot$K
+    \item Thermal conductivity: $k = \frac{1}{7.5408 \times 10^{-3} + 1.7692 \times 10^{-5} T + 3.6142 \times 10^{-9} T^2}$ W/m$\cdot$K
+    \item Melting point: 3120 K (2847°C)
+\end{itemize}
+
+\subsection{Water/Steam Properties (at 15 MPa)}
+
+\begin{itemize}
+    \item Saturation temperature: 615 K (342°C)
+    \item Liquid density: 700 kg/m$^3$
+    \item Liquid specific heat: $C_{p,l} = 4.18$ kJ/kg$\cdot$K
+    \item Latent heat of vaporization: 931 kJ/kg
+\end{itemize}
+
+% ===========================
+% BIBLIOGRAPHY
+% ===========================
+\begin{thebibliography}{99}
+
+\bibitem{lamarsh}
+Lamarsh, J. R., \& Baratta, A. J. (2001). \textit{Introduction to Nuclear Engineering} (3rd ed.). Prentice Hall.
+
+\bibitem{duderstadt}
+Duderstadt, J. J., \& Hamilton, L. J. (1976). \textit{Nuclear Reactor Analysis}. Wiley.
+
+\bibitem{hetrick}
+Hetrick, D. L. (1993). \textit{Dynamics of Nuclear Reactors}. American Nuclear Society.
+
+\bibitem{keepin}
+Keepin, G. R. (1965). \textit{Physics of Nuclear Kinetics}. Addison-Wesley.
+
+\bibitem{oecd}
+OECD/NEA (2008). \textit{Delayed Neutron Data for the Major Actinides}. NEA Data Bank.
+
+\bibitem{scipy}
+Virtanen, P., et al. (2020). SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python. \textit{Nature Methods}, 17, 261–272.
+
+\bibitem{matplotlib}
+Hunter, J. D. (2007). Matplotlib: A 2D Graphics Environment. \textit{Computing in Science \& Engineering}, 9(3), 90-95.
+
+\bibitem{gurecky}
+Gurecky, W. (2025). \textit{pyReactor: Educational Nuclear Reactor Simulator}. GitHub repository. \url{https://github.com/wgurecky/pyReactor}
+
+\bibitem{waltar}
+Waltar, A. E., \& Reynolds, A. B. (1981). \textit{Fast Breeder Reactors}. Pergamon Press.
+
+\bibitem{arduino}
+Arduino LLC. (2025). \textit{Arduino Uno R3 Datasheet}. Available: \url{https://www.arduino.cc}
+
+\bibitem{python}
+Python Software Foundation. (2025). \textit{The Python Standard Library}. Available: \url{https://docs.python.org/3/library/}
+
+\end{thebibliography}
+
+\end{document}

@@ -28,6 +28,7 @@ void loop(void){
   int rodHeightSetting;
   int scramCondition;
   int motorSpeed;
+  int coolantFlowSetting;
   
   if (Serial.available() > 0)
   {
@@ -38,9 +39,11 @@ void loop(void){
       // led glows blue (don't touch red if scram is active)
       ledPowerSetting = numberFromSerial();
       analogWrite(ledRGBBluePin, ledPowerSetting);
-      // Map power (0-255) to motor speed (20-180)
-      motorSpeed = map(ledPowerSetting, 0, 255, 20, 180);
-      analogWrite(motorPWM, motorSpeed);
+      break;
+    case 'c': //coolant flow control
+      // Control motor speed based on coolant flow rate
+      coolantFlowSetting = numberFromSerial();
+      analogWrite(motorPWM, coolantFlowSetting);
       break;
     case 'r': //rod position
       rodHeightSetting = numberFromSerial();

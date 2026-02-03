@@ -1,4 +1,4 @@
+DUNEReactor
 guiTemplate
-legoReactor
 reactor
 reactorPhysics

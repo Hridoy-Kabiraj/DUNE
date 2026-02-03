@@ -109,11 +109,11 @@ def dTcdt(S, t, mdotC):
 def diffRodWorth(h):
     """
     Improved differential control rod worth curve using cosine shape.
-    Tuned to keep total worth ~0.5 $ so small height moves are gentler.
+    Tuned to achieve total worth of 0.1 $ from fully inserted to fully withdrawn.
     h is fractional height: h=0 is fully inserted, h=100 is fully withdrawn
     delta_h * R(h) = reactivity change
     """
-    scalingFac = 0.005 * 1.e-5 / beta  # tuned for ~0.2$ total worth
+    scalingFac = 0.01021 * 1.e-5 / beta  # tuned for 0.1$ total worth
     return scalingFac * np.sin(np.pi * h / 100.0) * 100.0
 
 
@@ -122,7 +122,7 @@ def intRodWorth(h1, h2):
     Integral control rod worth curve.
     Returns reactivity in dollars ($/Beta)
     """
-    scalingFac = 0.005 * 1.e-5 / beta
+    scalingFac = 0.01021 * 1.e-5 / beta
     integral = lambda h: -100.0 * scalingFac * (100.0 / np.pi) * np.cos(np.pi * h / 100.0)
     return (integral(h2) - integral(h1))
 

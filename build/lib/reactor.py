@@ -7,19 +7,25 @@ from reactorPhysics import rho
 import time
 
 
-class LegoReactor(object):
+class DUNEReactor(object):
     """
     Provides methods to interact with the point kenetics model.
-    The reactor system state vector (with 6 delayed neutron groups):
-    S = [neutrons/cc, C1, C2, C3, C4, C5, C6, fuelT, coolantT, rodPosition]
+    The reactor system state vector (with 6 delayed neutron groups, Xenon-135, and Samarium-149 poisoning):
+    S = [neutrons/cc, C1, C2, C3, C4, C5, C6, fuelT, coolantT, rodPosition, I135, Xe135, Nd149, Pm149, Sm149]
+    Total: 15 state variables
     """
     def __init__(self, initialSystemState=None, tstep=0.01):
         """ Initialize reactor system state """
         if initialSystemState is None:
-            # Default: [n, C1-C6 (precursors), Tfuel, Tcoolant, rodPosition]
+            # Default: [n, C1-C6, Tfuel, Tcoolant, rodPosition, I135, Xe135, Nd149, Pm149, Sm149]
             n0 = 5.e7
             C_init = [n0 * 0.0065 / 6.0] * 6  # Distribute precursors equally
-            initialSystemState = [n0] + C_init + [450., 450., 0.]
+            I0 = 0.0  # Start with no Iodine-135
+            X0 = 0.0  # Start with no Xenon-135
+            Nd0 = 0.0  # Start with no Neodymium-149
+            Pm0 = 0.0  # Start with no Promethium-149
+            Sm0 = 0.0  # Start with no Samarium-149
+            initialSystemState = [n0] + C_init + [450., 450., 0., I0, X0, Nd0, Pm0, Sm0]
         self.S = np.array(initialSystemState)
         self.reactivity = rho(self.S, 0, 0, 0)
         self.tstep = tstep
@@ -29,13 +35,14 @@ class LegoReactor(object):
         self.mdotC = 1000.e3  # coolant flow rate [g / s]
         self.coolantSetPoint = 1000.e3
         self.pwrCtrl = False
+        self.coolantCtrl = False
         self.scramToggle = False
         # For Storage/Plotting (store key variables)
         self.maxTime = 100.  # maximum time storage history [s]
         dataStorLength = int(self.maxTime / self.tstep)
         self.time = np.zeros(dataStorLength)
-        # Store: n, sum(precursors), Tfuel, Tcoolant, rodPosition
-        self.storVals = np.zeros((5, dataStorLength))
+        # Store: n, sum(precursors), Tfuel, Tcoolant, rodPosition, reactivity, Xe135, Sm149
+        self.storVals = np.zeros((8, dataStorLength))
 
     def timeStep(self):
         """ Step reactor system forward in time """
@@ -47,9 +54,9 @@ class LegoReactor(object):
         self.storVals = np.roll(self.storVals, -1, axis=1)
         self.time = np.roll(self.time, -1)
         self.time[-1] = self.t[-1]
-        # Store key values: [n, sum(C1-C6), Tfuel, Tcoolant, rodPosition]
+        # Store key values: [n, sum(C1-C6), Tfuel, Tcoolant, rodPosition, reactivity, Xe135, Sm149]
         self.storVals[:, -1] = np.array([self.S[0], np.sum(self.S[1:7]), 
-                                          self.S[7], self.S[8], self.S[9]])
+                                          self.S[7], self.S[8], self.S[9], self.reactivity, self.S[11], self.S[14]])
 
     def __preStep(self):
         """
@@ -64,7 +71,9 @@ class LegoReactor(object):
             self.hrate = 0.
         elif self.hrate > 0 and self.S[9] >= 100.:
             self.hrate = 0.
-        self.__controlCoolantRate()
+        if not self.coolantCtrl:
+            self.__updateCoolantForPower()
+            self.__controlCoolantRate()
         self.__scramCheck()
         if self.scramToggle:
             # Insert control rods all the way
@@ -98,6 +107,33 @@ class LegoReactor(object):
 
     def setCoolantRate(self, mdotCin):
         self.coolantSetPoint = mdotCin
+
+    def toggleCoolantCtrl(self, coolantSet, coolantCtrlToggle=True):
+        """
+        Set coolant flow rate in kg/s (converts to g/s internally)
+        """
+        self.coolantSetPoint = coolantSet * 1.e3  # convert kg/s to g/s
+        self.coolantCtrl = coolantCtrlToggle
+        if self.coolantCtrl:
+            self.mdotC = self.coolantSetPoint
+
+    def __updateCoolantForPower(self):
+        """
+        Automatically adjust coolant setpoint based on reactor power
+        Maps power to coolant flow rate: low power ~ 200 kg/s, high power ~ 1200 kg/s
+        """
+        currentPower = qFuel(self.S[0]) / 1.e6  # Power in MW
+        maxPwr = 600.  # Maximum power for scaling
+        
+        # Normalize power (0 to 1)
+        normPwr = abs(currentPower / maxPwr)
+        if normPwr > 1.0:
+            normPwr = 1.0
+        
+        # Map to coolant flow rate range
+        minFlowRate = 200.e3  # 200 kg/s = 200000 g/s at minimum power
+        maxFlowRate = 1200.e3  # 1200 kg/s = 1200000 g/s at maximum power
+        self.coolantSetPoint = minFlowRate + (maxFlowRate - minFlowRate) * normPwr
 
     def __controlCoolantRate(self):
         diff = (self.coolantSetPoint - self.mdotC) / 10.
@@ -158,25 +194,25 @@ def test():
     """
     i = 0
     t0 = time.time()
-    legoReactor = LegoReactor()
-    legoReactor.setRodPosition(50.)  # set rod position to 50% withdrawn
+    duneReactor = DUNEReactor()
+    duneReactor.setRodPosition(50.)  # set rod position to 50% withdrawn
     while i < 10000:
-        legoReactor.timeStep()
+        duneReactor.timeStep()
         print("===================================")
-        print("Time [s] = %f" % legoReactor.t[-1])
-        print("Rod percent Withdrawn = %f" % legoReactor.S[9])
-        print("Reactor Power [MW] = %f " % float(qFuel(legoReactor.S[0]) / 1.e6))
-        print("Tfuel [K] = %f ,  Tcoolant [K] = %f" % (legoReactor.S[7], legoReactor.S[8]))
+        print("Time [s] = %f" % duneReactor.t[-1])
+        print("Rod percent Withdrawn = %f" % duneReactor.S[9])
+        print("Reactor Power [MW] = %f " % float(qFuel(duneReactor.S[0]) / 1.e6))
+        print("Tfuel [K] = %f ,  Tcoolant [K] = %f" % (duneReactor.S[7], duneReactor.S[8]))
         i += 1
     i = 0
-    legoReactor.togglePwrCtrl(200.)  # set reactor power to 200 MW
+    duneReactor.togglePwrCtrl(200.)  # set reactor power to 200 MW
     while i < 10000:
-        legoReactor.timeStep()
+        duneReactor.timeStep()
         print("===================================")
-        print("Time [s] = %f" % legoReactor.t[-1])
-        print("Rod percent Withdrawn = %f" % legoReactor.S[9])
-        print("Reactor Power [MW] = %f " % float(qFuel(legoReactor.S[0]) / 1.e6))
-        print("Tfuel [K] = %f ,  Tcoolant [K] = %f" % (legoReactor.S[7], legoReactor.S[8]))
+        print("Time [s] = %f" % duneReactor.t[-1])
+        print("Rod percent Withdrawn = %f" % duneReactor.S[9])
+        print("Reactor Power [MW] = %f " % float(qFuel(duneReactor.S[0]) / 1.e6))
+        print("Tfuel [K] = %f ,  Tcoolant [K] = %f" % (duneReactor.S[7], duneReactor.S[8]))
         i += 1
     t1 = time.time()
     print(t1 - t0)
