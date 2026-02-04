@@ -74,6 +74,18 @@ class MyFrame1 ( wx.Frame ):
 		self.rodSlide = wx.Slider( self.m_panel1, wx.ID_ANY, 50, 0, 100, wx.DefaultPosition, wx.Size( 100,250 ), wx.SL_VERTICAL )
 		bSizer1.Add( self.rodSlide, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 		
+		self.rodPosOut = wx.TextCtrl( self.m_panel1, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.rodPosOut.SetMaxLength( 0 ) 
+		bSizer1.Add( self.rodPosOut, 0, wx.ALL, 5 )
+		
+		self.m_staticText6 = wx.StaticText( self.m_panel1, wx.ID_ANY, u"Rod % Withdrawn", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText6.Wrap( -1 )
+		bSizer1.Add( self.m_staticText6, 0, wx.ALL, 5 )
+		
+		self.rodGauge = wx.Gauge( self.m_panel1, wx.ID_ANY, 100, wx.DefaultPosition, wx.Size( 50,250 ), wx.GA_SMOOTH|wx.GA_VERTICAL )
+		self.rodGauge.SetValue( 0 ) 
+		bSizer1.Add( self.rodGauge, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
+		
 		
 		self.m_panel1.SetSizer( bSizer1 )
 		self.m_panel1.Layout()
@@ -118,6 +130,14 @@ class MyFrame1 ( wx.Frame ):
 		self.m_staticText4.Wrap( -1 )
 		bSizer2.Add( self.m_staticText4, 0, wx.ALL, 5 )
 		
+		self.reactivityOut = wx.TextCtrl( self.m_panel4, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.reactivityOut.SetMaxLength( 0 ) 
+		bSizer2.Add( self.reactivityOut, 0, wx.ALL, 5 )
+		
+		self.m_staticTextReactivity = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Reactivity [$]", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticTextReactivity.Wrap( -1 )
+		bSizer2.Add( self.m_staticTextReactivity, 0, wx.ALL, 5 )
+		
 		self.xenonOut = wx.TextCtrl( self.m_panel4, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.xenonOut.SetMaxLength( 0 ) 
 		bSizer2.Add( self.xenonOut, 0, wx.ALL, 5 )
@@ -136,18 +156,6 @@ class MyFrame1 ( wx.Frame ):
 		
 		self.m_staticline14 = wx.StaticLine( self.m_panel4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
 		bSizer2.Add( self.m_staticline14, 0, wx.EXPAND |wx.ALL, 5 )
-		
-		self.rodPosOut = wx.TextCtrl( self.m_panel4, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.rodPosOut.SetMaxLength( 0 ) 
-		bSizer2.Add( self.rodPosOut, 0, wx.ALL, 5 )
-		
-		self.m_staticText6 = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Rod % Withdrawn", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.m_staticText6.Wrap( -1 )
-		bSizer2.Add( self.m_staticText6, 0, wx.ALL, 5 )
-		
-		self.rodGauge = wx.Gauge( self.m_panel4, wx.ID_ANY, 100, wx.DefaultPosition, wx.Size( 50,250 ), wx.GA_SMOOTH|wx.GA_VERTICAL )
-		self.rodGauge.SetValue( 0 ) 
-		bSizer2.Add( self.rodGauge, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
 		
 		
 		self.m_panel4.SetSizer( bSizer2 )

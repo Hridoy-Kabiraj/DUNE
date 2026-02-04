@@ -252,8 +252,10 @@ class CalcFrame(gui.MyFrame1):
         self.powOut.SetValue(str(round(float(qFuel(self.duneReactor.S[0]) / 1.e6), 6)))
         self.rodGauge.SetValue(int(self.duneReactor.S[9]))
         
+        # Update reactivity display (in dollars)
+        self.reactivityOut.SetValue('{:.6f}'.format(self.duneReactor.reactivity))
+        
         # Update new monitoring fields
-
         self.xenonOut.SetValue('{:.3e}'.format(self.duneReactor.S[11]))  # Xe-135 in scientific notation
         self.samariumOut.SetValue('{:.3e}'.format(self.duneReactor.S[14]))  # Sm-149 in scientific notation
         
