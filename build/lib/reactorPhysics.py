@@ -49,13 +49,12 @@ def dCdt(S, t, group_index):
     Time derivative of delayed neutron precursor population for a specific group.
     group_index: 0-5 for groups 1-6
     Units of first term:
-        (beta_i[unitless] / Lambda [s]) * [#/cm^3] * 4factorSurvival = [#/cm^3-s]
+        (beta_i[unitless] / Lambda [s]) * [#/cm^3] = [#/cm^3-s]
     Units of second term:
         lambda_i [1/s] * [#/cm^3] = [#/cm^3 -s]
     """
-    lifetimeCorrection = 0.6
     C_index = group_index + 1  # Precursor concentration at S[1] to S[6]
-    Cdot = (beta_i[group_index] / Lamb) * S[0] * lifetimeCorrection - lambda_i[group_index] * S[C_index]
+    Cdot = (beta_i[group_index] / Lamb) * S[0] - lambda_i[group_index] * S[C_index]
     if S[C_index] < 0. and Cdot < 0.:
         return 0.
     else:
