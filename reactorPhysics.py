@@ -28,6 +28,30 @@ alphaT = -0.007 * 1.e-5 / beta  # pcm / K / beta  reactivity per kelvin
 # Number of delayed neutron groups
 NUM_GROUPS = 6
 
+# Prompt Critical Mode flag and rod worth multiplier
+# Normal mode: $0.1 total rod worth
+# Prompt Critical mode: $1.5 total rod worth (enables prompt criticality demonstrations)
+PROMPT_CRITICAL_MODE = False
+ROD_WORTH_NORMAL = 0.01021  # Scaling factor for $0.1 total worth
+ROD_WORTH_PROMPT = 0.15315  # Scaling factor for $1.5 total worth (15x normal)
+
+def setPromptCriticalMode(enabled):
+    """
+    Enable or disable Prompt Critical Mode.
+    When enabled, control rod worth is increased from $0.1 to $1.5.
+    """
+    global PROMPT_CRITICAL_MODE
+    PROMPT_CRITICAL_MODE = enabled
+
+def getRodWorthScaling():
+    """
+    Get the current rod worth scaling factor based on mode.
+    """
+    if PROMPT_CRITICAL_MODE:
+        return ROD_WORTH_PROMPT
+    else:
+        return ROD_WORTH_NORMAL
+
 # Xenon-135 and Iodine-135 parameters
 gamma_I = 0.061  # I-135 yield per fission (direct)
 gamma_X = 0.003  # Xe-135 yield per fission (direct)
@@ -230,11 +254,13 @@ def dTcdt(S, t, mdotC):
 def diffRodWorth(h):
     """
     Improved differential control rod worth curve using cosine shape.
-    Tuned to achieve total worth of 0.1 $ from fully inserted to fully withdrawn.
+    Total worth depends on mode:
+    - Normal mode: $0.1 from fully inserted to fully withdrawn
+    - Prompt Critical mode: $1.5 from fully inserted to fully withdrawn
     h is fractional height: h=0 is fully inserted, h=100 is fully withdrawn
     delta_h * R(h) = reactivity change
     """
-    scalingFac = 0.01021 * 1.e-5 / beta  # tuned for 0.1$ total worth
+    scalingFac = getRodWorthScaling() * 1.e-5 / beta
     return scalingFac * np.sin(np.pi * h / 100.0) * 100.0
 
 
@@ -242,8 +268,11 @@ def intRodWorth(h1, h2):
     """
     Integral control rod worth curve.
     Returns reactivity in dollars ($/Beta)
+    Total worth depends on mode:
+    - Normal mode: $0.1 total
+    - Prompt Critical mode: $1.5 total
     """
-    scalingFac = 0.01021 * 1.e-5 / beta
+    scalingFac = getRodWorthScaling() * 1.e-5 / beta
     integral = lambda h: -100.0 * scalingFac * (100.0 / np.pi) * np.cos(np.pi * h / 100.0)
     return (integral(h2) - integral(h1))
 

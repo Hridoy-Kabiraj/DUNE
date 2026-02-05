@@ -78,6 +78,7 @@ class CalcFrame(gui.MyFrame1):
         self.scramToggle = False
         self.pwrCtrlToggle = False
         self.coolantCtrlToggle = False
+        self.promptCriticalToggle = False
         self.pwrSetPt.SetValue(str(0.0))
         self.rodSetPt.SetValue(str(0.0))
         self.rodSlide.SetValue(100)
@@ -217,6 +218,16 @@ class CalcFrame(gui.MyFrame1):
         coolantSet = self.coolantBox.GetValue()
         self.coolantCtrlToggle = not self.coolantCtrlToggle
         self.duneReactor.toggleCoolantCtrl(float(coolantSet), bool(self.coolantCtrlToggle))
+
+    def PromptJumpON(self, event):
+        """ On clicking the prompt jump mode checkbox """
+        self.promptCriticalToggle = not self.promptCriticalToggle
+        self.duneReactor.togglePromptJumpMode(bool(self.promptCriticalToggle))
+        if self.promptCriticalToggle:
+            print("WARNING: Prompt Jump Mode ACTIVATED - Inserting ~$0.004 reactivity")
+            print("Control rod withdrawn instantly (rod position increased by 8%)")
+        else:
+            print("Prompt Jump Mode DEACTIVATED")
 
     def setReactorPwr(self, event):
         """ On txt input to reactor power box """

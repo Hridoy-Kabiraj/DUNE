@@ -120,7 +120,7 @@ The Arduino code provides physical feedback through:
   - Red LED: SCRAM condition (case 's')
 - **Independent Pump Control**: PWM-driven motor for coolant pump simulation (case 'c')
   - Decoupled from power level for realistic coolant system control
-  - Motor speed maps to coolant flow rate: 200-1800 kg/s → PWM 20-180
+  - Motor speed maps to coolant flow rate: 200-1200 kg/s → PWM 20-180
   - Allows demonstration of thermal-hydraulic transients
 
 **Serial Command Protocol**:
@@ -356,7 +356,7 @@ python DUNEReactor.py
 
 #### Manual Coolant Control Mode
 1. Check the "Flow Ctrl" toggle next to coolant flow rate
-2. Enter desired coolant flow rate (200-1800 kg/s)
+2. Enter desired coolant flow rate (200-1200 kg/s)
 3. System maintains user-specified flow rate independent of power level
 4. Useful for investigating thermal-hydraulic transients and cooling system effects
 5. Uncheck to return to automatic power-based flow adjustment
@@ -367,8 +367,13 @@ python DUNEReactor.py
 - **Rod Position Slider**: Manual control rod height (0% = fully inserted, 100% = fully withdrawn)
 - **Power Setpoint**: Target power level in MW for automatic control
 - **Power Ctrl Checkbox**: Enable/disable automatic PID power control
-- **Coolant Flow**: Adjust coolant mass flow rate (200-1800 kg/s)
+- **Coolant Flow**: Adjust coolant mass flow rate (200-1200 kg/s)
 - **Flow Ctrl Checkbox**: Enable/disable manual coolant flow control
+- **Prompt Jump Mode Checkbox**: Instantly inserts ~$0.004 reactivity for demonstrating prompt jump phenomenon
+  - ⚠️ **WARNING**: For educational demonstration only!
+  - Instantly withdraws control rod by 8% when activated
+  - Automatic SCRAM remains enabled for safety
+  - Demonstrates the rapid power increase characteristic of positive reactivity insertion
 - **SCRAM Button**: Emergency shutdown - inserts all control rods immediately
   - Press again to reset SCRAM condition and unlock reactor
 - **Pause**: Freeze simulation to examine current state
@@ -454,15 +459,19 @@ The simulator includes realistic safety features:
 - Enable manual coolant control mode
 - Start at steady state with normal flow (1000 kg/s)
 - Reduce flow to minimum (200 kg/s) and observe temperature rise
-- Increase flow to maximum (1800 kg/s) and observe cooling effect
+- Increase flow to maximum (1200 kg/s) and observe cooling effect
 - Note how reactor power self-regulates through temperature feedback
 - Export CSV data and plot temperature vs. flow rate relationship
 
-#### Experiment 3: Prompt Criticality
+#### Experiment 3: Prompt Jump Phenomenon
 - **WARNING**: For educational observation only!
-- Starting from low power, rapidly insert large reactivity (>$1.00)
-- Observe prompt jump followed by temperature-limited stabilization
-- Shows importance of staying below prompt critical limit
+- Start reactor at low-to-moderate power level
+- **Enable Prompt Jump Mode** by checking the checkbox in the GUI
+  - This instantly withdraws control rod by 8%, inserting ~$0.004 reactivity
+- Observe the characteristic prompt jump in power
+- Note how the power stabilizes due to temperature feedback
+- Automatic SCRAM remains active for safety
+- Demonstrates the reactor's response to sudden reactivity insertions
 
 #### Experiment 4: SCRAM Response
 - Operate at high power

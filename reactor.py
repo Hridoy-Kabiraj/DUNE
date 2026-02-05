@@ -3,6 +3,7 @@ from scipy import integrate
 from reactorPhysics import reactorSystem
 from reactorPhysics import qFuel
 from reactorPhysics import rho
+import reactorPhysics
 #import matplotlib.pyplot as pl
 import time
 
@@ -37,6 +38,7 @@ class DUNEReactor(object):
         self.pwrCtrl = False
         self.coolantCtrl = False
         self.scramToggle = False
+        self.promptCriticalMode = False
         # For Storage/Plotting (store key variables)
         self.maxTime = 100.  # maximum time storage history [s]
         dataStorLength = int(self.maxTime / self.tstep)
@@ -82,7 +84,7 @@ class DUNEReactor(object):
 
     def __scramCheck(self):
         """
-        Check for conditions which require us to SCRAM
+        Check for conditions which require us to SCRAM.
         """
         if self.S[7] > 1700:
             # Fuel temp scram (Temp in Kelvin)
@@ -186,6 +188,22 @@ class DUNEReactor(object):
         You crashed the reactor.
         """
         self.scramToggle = scramToggle
+
+    def togglePromptJumpMode(self, promptCriticalToggle=True):
+        """
+        Toggle Prompt Jump Mode.
+        When enabled, instantly inserts ~$0.004 reactivity by quickly
+        withdrawing the control rod (similar to reverse SCRAM).
+        Automatic SCRAM remains enabled.
+        WARNING: This is for educational demonstration only!
+        """
+        self.promptCriticalMode = promptCriticalToggle
+        if promptCriticalToggle:
+            # Instantly withdraw rod by ~8% to insert ~$0.004 reactivity
+            # (similar to how SCRAM instantly inserts rods, but in reverse)
+            newPos = min(self.S[9] + 8.0, 100.0)
+            self.S[9] = newPos
+            self.hrate = 0.0  # Stop any ongoing rod movement
 
 
 def test():

@@ -61,6 +61,14 @@ class MyFrame1 ( wx.Frame ):
 		self.coolantbox = wx.CheckBox( self.m_panel1, wx.ID_ANY, u"Flow Ctrl", wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer1.Add( self.coolantbox, 0, wx.ALL, 5 )
 		
+		self.m_staticline16 = wx.StaticLine( self.m_panel1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		bSizer1.Add( self.m_staticline16, 0, wx.EXPAND |wx.ALL, 5 )
+		
+		self.promptCriticalBox = wx.CheckBox( self.m_panel1, wx.ID_ANY, u"Prompt Jump Mode", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.promptCriticalBox.SetForegroundColour( wx.Colour( 255, 0, 0 ) )
+		self.promptCriticalBox.SetToolTip( u"Instantly inserts ~$0.004 reactivity by withdrawing control rod" )
+		bSizer1.Add( self.promptCriticalBox, 0, wx.ALL, 5 )
+		
 		self.m_staticline2 = wx.StaticLine( self.m_panel1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
 		bSizer1.Add( self.m_staticline2, 0, wx.EXPAND |wx.ALL, 5 )
 		
@@ -185,6 +193,7 @@ class MyFrame1 ( wx.Frame ):
 		self.pwrbox.Bind( wx.EVT_CHECKBOX, self.pwrCtrlON )
 		self.coolantBox.Bind( wx.EVT_TEXT_ENTER, self.coolantSet )
 		self.coolantbox.Bind( wx.EVT_CHECKBOX, self.coolantCtrlON )
+		self.promptCriticalBox.Bind( wx.EVT_CHECKBOX, self.PromptJumpON )
 		self.rodSetPt.Bind( wx.EVT_TEXT_ENTER, self.setRodPos )
 		self.rodSlide.Bind( wx.EVT_SCROLL, self.rodSlideSet )
 		self.plotZoom.Bind( wx.EVT_SCROLL, self.setPlotZoom )
@@ -211,6 +220,9 @@ class MyFrame1 ( wx.Frame ):
 		event.Skip()
 	
 	def coolantCtrlON( self, event ):
+		event.Skip()
+	
+	def PromptJumpON( self, event ):
 		event.Skip()
 	
 	def setRodPos( self, event ):
