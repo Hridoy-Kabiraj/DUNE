@@ -107,21 +107,46 @@ class CalcFrame(gui.MyFrame1):
         Initilize plot area.
         """
         self.dpi = 100
-        self.fig = Figure((15.0, 9.5), dpi=self.dpi)
-
-        self.axes1 = self.fig.add_subplot(221)  # Top left: Power
-        self.axes4 = self.fig.add_subplot(222)  # Top right: Reactivity
-        self.axes2 = self.fig.add_subplot(223)  # Bottom left: Temperature
+        self.fig = Figure((16.0, 10.0), dpi=self.dpi)
+        
+        # Adjust margins to shift plots left
+        self.fig.subplots_adjust(left=0.05, right=0.85, top=0.95, bottom=0.1)
+        
+        # Use GridSpec for flexible layout: 3 rows, 8 columns
+        from matplotlib.gridspec import GridSpec
+        gs = GridSpec(3, 8, figure=self.fig, hspace=0.4, wspace=1.9)
+        
+        # Row 1: Power and Reactivity (2 plots)
+        self.axes1 = self.fig.add_subplot(gs[0, 0:4])  # Power (left half)
+        self.axes4 = self.fig.add_subplot(gs[0, 4:8])  # Reactivity (right half)
+        
+        # Row 2: Temperature and Poisons (2 plots)
+        self.axes2 = self.fig.add_subplot(gs[1, 0:4])  # Temperature (left half)
         self.axes3 = self.axes2.twinx()
-        self.axes5 = self.fig.add_subplot(224)  # Bottom right: Xenon
+        self.axes5 = self.fig.add_subplot(gs[1, 4:8])  # Xenon/Sm (right half)
+        
+        # Row 3: Burnup and 3 isotope plots (4 plots total)
+        self.axes6 = self.fig.add_subplot(gs[2, 0:2])  # Burnup
+        self.axes_u235 = self.fig.add_subplot(gs[2, 2:4])  # U-235
+        self.axes_u238 = self.fig.add_subplot(gs[2, 4:6])  # U-238
+        self.axes_pu239 = self.fig.add_subplot(gs[2, 6:8])  # Pu-239 and FP
+        
         if LooseVersion(matplotlib.__version__) >= LooseVersion('2.0.0'):
             self.axes1.set_facecolor('white')
             self.axes4.set_facecolor('white')
             self.axes5.set_facecolor('white')
+            self.axes6.set_facecolor('white')
+            self.axes_u235.set_facecolor('white')
+            self.axes_u238.set_facecolor('white')
+            self.axes_pu239.set_facecolor('white')
         else:
             self.axes1.set_axis_bgcolor('white')
             self.axes4.set_axis_bgcolor('white')
             self.axes5.set_axis_bgcolor('white')
+            self.axes6.set_axis_bgcolor('white')
+            self.axes_u235.set_axis_bgcolor('white')
+            self.axes_u238.set_axis_bgcolor('white')
+            self.axes_pu239.set_axis_bgcolor('white')
         self.axes1.set_title('Reactor Power [MW] Trace', size=12)
 
         pylab.setp(self.axes1.get_xticklabels(), fontsize=8)
@@ -130,6 +155,14 @@ class CalcFrame(gui.MyFrame1):
         pylab.setp(self.axes4.get_yticklabels(), fontsize=8)
         pylab.setp(self.axes5.get_xticklabels(), fontsize=8)
         pylab.setp(self.axes5.get_yticklabels(), fontsize=8)
+        pylab.setp(self.axes6.get_xticklabels(), fontsize=8)
+        pylab.setp(self.axes6.get_yticklabels(), fontsize=8)
+        pylab.setp(self.axes_u235.get_xticklabels(), fontsize=8)
+        pylab.setp(self.axes_u235.get_yticklabels(), fontsize=8)
+        pylab.setp(self.axes_u238.get_xticklabels(), fontsize=8)
+        pylab.setp(self.axes_u238.get_yticklabels(), fontsize=8)
+        pylab.setp(self.axes_pu239.get_xticklabels(), fontsize=8)
+        pylab.setp(self.axes_pu239.get_yticklabels(), fontsize=8)
 
     def draw_plot(self):
         # Determine plot data length depending on zoom lvl
@@ -146,11 +179,20 @@ class CalcFrame(gui.MyFrame1):
         reactivitydata = self.data[1][5, :][-plotMask:]
         xenondata = self.data[1][6, :][-plotMask:]  # Xenon-135 concentration
         samariumdata = self.data[1][7, :][-plotMask:]  # Samarium-149 concentration
+        n235data = self.data[1][8, :][-plotMask:]  # U-235 concentration
+        n238data = self.data[1][9, :][-plotMask:]  # U-238 concentration
+        n239pudata = self.data[1][10, :][-plotMask:]  # Pu-239 concentration
+        nfpdata = self.data[1][11, :][-plotMask:]  # Fission products concentration
+        burnupdata = self.data[1][12, :][-plotMask:]  # Burnup
         self.axes1.clear()
         self.axes2.clear()
         self.axes3.clear()
         self.axes4.clear()
         self.axes5.clear()
+        self.axes6.clear()
+        self.axes_u235.clear()
+        self.axes_u238.clear()
+        self.axes_pu239.clear()
         
         # Power plot (top left)
         self.axes1.set_ylim(0, 800.)
@@ -166,7 +208,7 @@ class CalcFrame(gui.MyFrame1):
         self.axes4.plot(xdata, reactivitydata, color='g', linewidth=2)
         self.axes4.axhline(y=0, color='k', linestyle='--', linewidth=1, alpha=0.5)
         
-        # Temperature plot (bottom left)
+        # Temperature plot (middle left)
         self.axes2.set_ylim(400, 1750.)
         self.axes3.set_ylim(400, 750.)
         self.axes2.set_ylabel('Fuel Temperature [K]')
@@ -181,14 +223,46 @@ class CalcFrame(gui.MyFrame1):
         handles, labels = self.axes3.get_legend_handles_labels()
         self.axes3.legend(handles, labels, bbox_to_anchor=(0.402, 0.85))
         
-        # Fission Product Poisons: Xenon-135 and Samarium-149 (bottom right)
+        # Fission Product Poisons: Xenon-135 and Samarium-149 (middle right)
         self.axes5.set_title('Fission Product Poisons', size=12)
         self.axes5.set_ylabel('Concentration [atoms/cm³]')
-        self.axes5.set_xlabel(str(round(max(xdata), 0)) + ' time [s]')
+        self.axes5.set_xlabel('time [s]')
         xenonPlot, = self.axes5.plot(xdata, xenondata, color='purple', linewidth=2, label='Xe-135')
         samariumPlot, = self.axes5.plot(xdata, samariumdata, color='orange', linewidth=2, label='Sm-149')
         self.axes5.ticklabel_format(style='scientific', axis='y', scilimits=(0,0))
         self.axes5.legend(loc='best', fontsize=9)
+        
+        # Row 3: Burnup
+        self.axes6.set_title('Burnup', size=12)
+        self.axes6.set_ylabel('[MWd/kgU]')
+        self.axes6.set_xlabel('time [s]')
+        self.axes6.plot(xdata, burnupdata, color='brown', linewidth=2)
+        self.axes6.ticklabel_format(style='scientific', axis='y', scilimits=(0,0))
+        
+        # Row 3: U-235 concentration
+        self.axes_u235.set_title('U-235', size=12)
+        self.axes_u235.set_ylabel('[atoms/cm³]')
+        self.axes_u235.set_xlabel('time [s]')
+        self.axes_u235.plot(xdata, n235data, color='green', linewidth=2)
+        self.axes_u235.ticklabel_format(style='scientific', axis='y', scilimits=(0,0))
+        
+        # Row 3: U-238 concentration
+        self.axes_u238.set_title('U-238', size=12)
+        self.axes_u238.set_ylabel('[atoms/cm³]')
+        self.axes_u238.set_xlabel('time [s]')
+        self.axes_u238.plot(xdata, n238data, color='blue', linewidth=2)
+        self.axes_u238.ticklabel_format(style='scientific', axis='y', scilimits=(0,0))
+        
+        # Row 3: Pu-239 and Fission Products concentration
+        self.axes_pu239.set_title('Pu-239 & FP', size=12)
+        self.axes_pu239.set_ylabel('[atoms/cm³]')
+        self.axes_pu239.set_xlabel('time [s]')
+        self.axes_pu239.plot(xdata, n239pudata, color='red', linewidth=2, label='Pu-239')
+        self.axes_pu239.plot(xdata, nfpdata, color='gray', linewidth=2, label='FP')
+        self.axes_pu239.ticklabel_format(style='scientific', axis='y', scilimits=(0,0))
+        self.axes_pu239.legend(loc='best', fontsize=8)
+        
+        self.fig.tight_layout()
         self.canvas.draw()
 
     #######################
@@ -224,8 +298,8 @@ class CalcFrame(gui.MyFrame1):
         self.promptCriticalToggle = not self.promptCriticalToggle
         self.duneReactor.togglePromptJumpMode(bool(self.promptCriticalToggle))
         if self.promptCriticalToggle:
-            print("WARNING: Prompt Jump Mode ACTIVATED - Inserting ~$0.004 reactivity")
-            print("Control rod withdrawn instantly (rod position increased by 8%)")
+            print("WARNING: Prompt Jump Mode ACTIVATED - Inserting ~$0.003 reactivity")
+            print("Control rod withdrawn instantly (rod position increased by 3%)")
         else:
             print("Prompt Jump Mode DEACTIVATED")
 
@@ -269,6 +343,10 @@ class CalcFrame(gui.MyFrame1):
         # Update new monitoring fields
         self.xenonOut.SetValue('{:.3e}'.format(self.duneReactor.S[11]))  # Xe-135 in scientific notation
         self.samariumOut.SetValue('{:.3e}'.format(self.duneReactor.S[14]))  # Sm-149 in scientific notation
+        self.burnupOut.SetValue('{:.3e}'.format(self.duneReactor.S[19]))  # Burnup in MWd/kgU
+        self.u235Out.SetValue('{:.3e}'.format(self.duneReactor.S[15]))  # U-235 concentration
+        self.u238Out.SetValue('{:.3e}'.format(self.duneReactor.S[16]))  # U-238 concentration
+        self.pu239Out.SetValue('{:.3e}'.format(self.duneReactor.S[17]))  # Pu-239 concentration
         
         # Update coolant flow rate display only if coolant control is not active
         if not self.coolantCtrlToggle:
@@ -333,7 +411,9 @@ class CalcFrame(gui.MyFrame1):
         self.csv_writer.writerow(['Time(s)', 'Neutron_Density(#/cc)', 'Power(MW)', 
                                    'Reactivity($)', 'Fuel_Temp(K)', 'Coolant_Temp(K)', 
                                    'Flow_Rate(kg/s)', 'Rod_Position(%)', 
-                                   'Xe-135(atoms/cc)', 'Sm-149(atoms/cc)'])
+                                   'Xe-135(atoms/cc)', 'Sm-149(atoms/cc)',
+                                   'Burnup(MWd/kgU)', 'U-235(atoms/cc)', 'U-238(atoms/cc)',
+                                   'Pu-239(atoms/cc)', 'FP(atoms/cc)'])
         self.last_log_time = 0.0
         self.log_interval = 0.5  # Log every 0.5 seconds
         print(f"CSV logging initialized: {self.csv_filename}")
@@ -354,11 +434,18 @@ class CalcFrame(gui.MyFrame1):
                 rod_position = self.duneReactor.S[9]
                 xenon_conc = self.duneReactor.S[11]  # Xe-135 concentration
                 samarium_conc = self.duneReactor.S[14]  # Sm-149 concentration
+                burnup = self.duneReactor.S[19]  # Burnup in MWd/kgU
+                u235_conc = self.duneReactor.S[15]  # U-235 concentration
+                u238_conc = self.duneReactor.S[16]  # U-238 concentration
+                pu239_conc = self.duneReactor.S[17]  # Pu-239 concentration
+                fp_conc = self.duneReactor.S[18]  # Fission products concentration
                 
                 self.csv_writer.writerow([time_val, neutron_density, power_mw, 
                                            reactivity, fuel_temp, coolant_temp, 
                                            flow_rate, rod_position, 
-                                           xenon_conc, samarium_conc])
+                                           xenon_conc, samarium_conc,
+                                           burnup, u235_conc, u238_conc,
+                                           pu239_conc, fp_conc])
                 self.last_log_time = time_val
     
     def closeCSVLogging(self):

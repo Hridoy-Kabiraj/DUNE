@@ -4,6 +4,8 @@ from reactorPhysics import reactorSystem
 from reactorPhysics import qFuel
 from reactorPhysics import rho
 import reactorPhysics
+from reactorPhysics import N235_0, N238_0, N239Pu_0, NFP_0
+from reactorPhysics import beta_i, lambda_i, Lamb
 #import matplotlib.pyplot as pl
 import time
 
@@ -11,22 +13,32 @@ import time
 class DUNEReactor(object):
     """
     Provides methods to interact with the point kenetics model.
-    The reactor system state vector (with 6 delayed neutron groups, Xenon-135, and Samarium-149 poisoning):
-    S = [neutrons/cc, C1, C2, C3, C4, C5, C6, fuelT, coolantT, rodPosition, I135, Xe135, Nd149, Pm149, Sm149]
-    Total: 15 state variables
+    The reactor system state vector (with 6 delayed neutron groups, Xenon-135, Samarium-149 poisoning,
+    fuel isotope depletion, and burnup tracking):
+    S = [n, C1-C6, Tfuel, Tcoolant, rodPosition, I135, Xe135, Nd149, Pm149, Sm149, N235, N238, N239Pu, NFP, Burnup]
+    Total: 20 state variables
     """
     def __init__(self, initialSystemState=None, tstep=0.01):
         """ Initialize reactor system state """
         if initialSystemState is None:
-            # Default: [n, C1-C6, Tfuel, Tcoolant, rodPosition, I135, Xe135, Nd149, Pm149, Sm149]
-            n0 = 5.e7
-            C_init = [n0 * 0.0065 / 6.0] * 6  # Distribute precursors equally
+            # Default: [n, C1-C6, Tfuel, Tcoolant, rodPosition, I135, Xe135, Nd149, Pm149, Sm149, N235, N238, N239Pu, NFP, Burnup]
+            # Start at source level (very low neutron population)
+            # Reactor will build up power when brought to criticality by withdrawing rods
+            n0 = 1.e3  # Source level neutrons - essentially zero power at startup
+            # Initialize precursors at equilibrium: C_i = beta_i * n / (lambda_i * Lamb)
+            C_init = list(beta_i * n0 / (lambda_i * Lamb))
             I0 = 0.0  # Start with no Iodine-135
             X0 = 0.0  # Start with no Xenon-135
             Nd0 = 0.0  # Start with no Neodymium-149
             Pm0 = 0.0  # Start with no Promethium-149
             Sm0 = 0.0  # Start with no Samarium-149
-            initialSystemState = [n0] + C_init + [450., 450., 0., I0, X0, Nd0, Pm0, Sm0]
+            # Fuel isotope initial values
+            N235_init = N235_0  # Fresh fuel U-235 concentration
+            N238_init = N238_0  # Fresh fuel U-238 concentration
+            N239Pu_init = N239Pu_0  # No Pu-239 in fresh fuel
+            NFP_init = NFP_0  # No fission products in fresh fuel
+            B_init = 0.0  # Zero burnup for fresh fuel
+            initialSystemState = [n0] + C_init + [450., 450., 0., I0, X0, Nd0, Pm0, Sm0, N235_init, N238_init, N239Pu_init, NFP_init, B_init]
         self.S = np.array(initialSystemState)
         self.reactivity = rho(self.S, 0, 0, 0)
         self.tstep = tstep
@@ -43,8 +55,12 @@ class DUNEReactor(object):
         self.maxTime = 100.  # maximum time storage history [s]
         dataStorLength = int(self.maxTime / self.tstep)
         self.time = np.zeros(dataStorLength)
-        # Store: n, sum(precursors), Tfuel, Tcoolant, rodPosition, reactivity, Xe135, Sm149
-        self.storVals = np.zeros((8, dataStorLength))
+        # Store: n, sum(precursors), Tfuel, Tcoolant, rodPosition, reactivity, Xe135, Sm149, N235, N238, N239Pu, NFP, Burnup
+        # Pre-fill with initial values so plots don't show zeros at start
+        initial_store = np.array([self.S[0], np.sum(self.S[1:7]), 
+                                   self.S[7], self.S[8], self.S[9], self.reactivity, 
+                                   self.S[11], self.S[14], self.S[15], self.S[16], self.S[17], self.S[18], self.S[19]])
+        self.storVals = np.tile(initial_store.reshape(-1, 1), (1, dataStorLength))
 
     def timeStep(self):
         """ Step reactor system forward in time """
@@ -56,9 +72,10 @@ class DUNEReactor(object):
         self.storVals = np.roll(self.storVals, -1, axis=1)
         self.time = np.roll(self.time, -1)
         self.time[-1] = self.t[-1]
-        # Store key values: [n, sum(C1-C6), Tfuel, Tcoolant, rodPosition, reactivity, Xe135, Sm149]
+        # Store key values: [n, sum(C1-C6), Tfuel, Tcoolant, rodPosition, reactivity, Xe135, Sm149, N235, N238, N239Pu, NFP, Burnup]
         self.storVals[:, -1] = np.array([self.S[0], np.sum(self.S[1:7]), 
-                                          self.S[7], self.S[8], self.S[9], self.reactivity, self.S[11], self.S[14]])
+                                          self.S[7], self.S[8], self.S[9], self.reactivity, 
+                                          self.S[11], self.S[14], self.S[15], self.S[16], self.S[17], self.S[18], self.S[19]])
 
     def __preStep(self):
         """
@@ -192,16 +209,16 @@ class DUNEReactor(object):
     def togglePromptJumpMode(self, promptCriticalToggle=True):
         """
         Toggle Prompt Jump Mode.
-        When enabled, instantly inserts ~$0.004 reactivity by quickly
+        When enabled, instantly inserts ~$0.003 reactivity by quickly
         withdrawing the control rod (similar to reverse SCRAM).
         Automatic SCRAM remains enabled.
         WARNING: This is for educational demonstration only!
         """
         self.promptCriticalMode = promptCriticalToggle
         if promptCriticalToggle:
-            # Instantly withdraw rod by ~8% to insert ~$0.004 reactivity
-            # (similar to how SCRAM instantly inserts rods, but in reverse)
-            newPos = min(self.S[9] + 8.0, 100.0)
+            # Instantly withdraw rod by ~3% to insert ~$0.003 reactivity
+            # (with $0.2 total rod worth, 3% withdrawal ≈ $0.003)
+            newPos = min(self.S[9] + 3.0, 100.0)
             self.S[9] = newPos
             self.hrate = 0.0  # Stop any ongoing rod movement
 

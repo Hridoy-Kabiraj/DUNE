@@ -28,29 +28,14 @@ alphaT = -0.007 * 1.e-5 / beta  # pcm / K / beta  reactivity per kelvin
 # Number of delayed neutron groups
 NUM_GROUPS = 6
 
-# Prompt Critical Mode flag and rod worth multiplier
-# Normal mode: $0.1 total rod worth
-# Prompt Critical mode: $1.5 total rod worth (enables prompt criticality demonstrations)
-PROMPT_CRITICAL_MODE = False
-ROD_WORTH_NORMAL = 0.01021  # Scaling factor for $0.1 total worth
-ROD_WORTH_PROMPT = 0.15315  # Scaling factor for $1.5 total worth (15x normal)
+# Control rod worth scaling factor for $0.2 total worth
+ROD_WORTH_SCALING = 0.02042
 
-def setPromptCriticalMode(enabled):
-    """
-    Enable or disable Prompt Critical Mode.
-    When enabled, control rod worth is increased from $0.1 to $1.5.
-    """
-    global PROMPT_CRITICAL_MODE
-    PROMPT_CRITICAL_MODE = enabled
-
-def getRodWorthScaling():
-    """
-    Get the current rod worth scaling factor based on mode.
-    """
-    if PROMPT_CRITICAL_MODE:
-        return ROD_WORTH_PROMPT
-    else:
-        return ROD_WORTH_NORMAL
+# Excess reactivity of fresh fuel ($ dollars)
+# This represents the excess reactivity built into fresh fuel to compensate for burnup
+# Rods must be inserted to compensate: at rod=0, reactor is subcritical
+# At ~33% rod withdrawal, reactor reaches criticality (due to sinusoidal worth curve)
+RHO_EXCESS = 0.05  # $0.05 excess reactivity with fresh fuel
 
 # Xenon-135 and Iodine-135 parameters
 gamma_I = 0.061  # I-135 yield per fission (direct)
@@ -69,8 +54,46 @@ sigma_aPm = 1400 * 1e-24  # Pm-149 absorption cross-section [cm^2] (1400 barns)
 sigma_aSm = 40800 * 1e-24  # Sm-149 absorption cross-section [cm^2] (40,800 barns)
 # Note: Sm-149 is essentially stable (half-life ~2e15 years), so no decay term
 
+# ============================================================================
+# Burnup and Fuel Isotope Depletion Parameters
+# ============================================================================
+
+# Microscopic cross-sections [cm^2] (1 barn = 1e-24 cm^2)
+sigma_f235 = 585.0 * 1e-24   # U-235 fission cross-section [cm^2] (585 barns thermal)
+sigma_c238 = 2.68 * 1e-24    # U-238 capture cross-section [cm^2] (2.68 barns thermal)
+sigma_f239 = 750.0 * 1e-24   # Pu-239 fission cross-section [cm^2] (750 barns thermal)
+
+# Initial fuel composition (number densities [atoms/cm^3])
+# For typical 4% enriched UO2 fuel with density ~10.5 g/cm^3
+N235_0 = 9.84e20     # Initial U-235 number density [atoms/cm^3]
+N238_0 = 2.21e22     # U-238 number density [atoms/cm^3] (assumed constant for simplicity)
+N239Pu_0 = 0.0       # Initial Pu-239 (none at fresh fuel)
+NFP_0 = 0.0          # Initial fission products (none at fresh fuel)
+
+# Fission product yield (lumped)
+Y_FP = 2.0  # ~2 fission products per fission
+
+# Heavy metal mass for burnup calculation
+# M_HM = total heavy metal inventory in kg (U-235 + U-238 initially)
+# For Vr = 3e6 cc with VfFuel = 0.4 and UO2 density ~10.5 g/cm^3
+# Fuel volume = 3e6 * 0.4 = 1.2e6 cc
+# UO2 mass = 1.2e6 * 10.5 = 1.26e7 g = 12600 kg
+# U mass fraction in UO2 = 238/(238+32) = 0.881
+# Heavy metal mass = 12600 * 0.881 = 11100 kg
+M_HM = 11100.0  # Heavy metal inventory [kg]
+
+# Reactivity coefficients for isotope changes [$/atom/cm^3]
+# These relate number density changes to reactivity changes
+# Burnup reactivity coefficients (scaled down for demo timescales)
+# Real reactors see these effects over months/years; we scale for visualization
+BURNUP_SCALE = 1e-3  # Scale factor to slow down burnup reactivity effects
+k_235 = 1.5e-21 / beta * BURNUP_SCALE   # $ per (atom/cm^3) for U-235
+k_239 = 2.0e-21 / beta * BURNUP_SCALE   # $ per (atom/cm^3) for Pu-239 (higher due to higher eta)
+k_FP = 5.0e-23 / beta * BURNUP_SCALE    # $ per (atom/cm^3) for fission products (parasitic absorption)
+
 # Define all terms in list S[]
-# S = [neutrons/cc, C1, C2, C3, C4, C5, C6, fuelT, coolantT, rodPosition, I135, Xe135, Nd149, Pm149, Sm149]
+# S = [neutrons/cc, C1, C2, C3, C4, C5, C6, fuelT, coolantT, rodPosition, I135, Xe135, Nd149, Pm149, Sm149, N235, N238, N239Pu, NFP, Burnup]
+# Indices: 0=n, 1-6=C1-C6, 7=Tfuel, 8=Tcoolant, 9=rod, 10=I135, 11=Xe135, 12=Nd149, 13=Pm149, 14=Sm149, 15=N235, 16=N238, 17=N239Pu, 18=NFP, 19=Burnup
 
 def dndt(S, t, reactivity):
     """
@@ -207,9 +230,96 @@ def dSmdt(S, t):
     return from_promethium - burnout
 
 
+def dN235dt(S, t):
+    """
+    Time derivative of U-235 number density.
+    U-235 is depleted by fission.
+    Units: [atoms/cm^3-s]
+    """
+    n = S[0]  # neutron density
+    N235 = S[15]  # U-235 concentration
+    phi = eta * n * v  # neutron flux [n/cm^2-s]
+    
+    # Depletion by fission
+    depletion = sigma_f235 * phi * N235
+    
+    return -depletion
+
+
+def dN238dt(S, t):
+    """
+    Time derivative of U-238 number density.
+    U-238 is depleted by neutron capture (producing Pu-239).
+    Units: [atoms/cm^3-s]
+    """
+    n = S[0]  # neutron density
+    N238 = S[16]  # U-238 concentration
+    phi = eta * n * v  # neutron flux [n/cm^2-s]
+    
+    # Depletion by capture
+    depletion = sigma_c238 * phi * N238
+    
+    return -depletion
+
+
+def dN239Pudt(S, t):
+    """
+    Time derivative of Pu-239 number density.
+    Pu-239 is produced from U-238 capture and depleted by fission.
+    Units: [atoms/cm^3-s]
+    """
+    n = S[0]  # neutron density
+    N238 = S[16]  # U-238 concentration
+    N239Pu = S[17]  # Pu-239 concentration
+    phi = eta * n * v  # neutron flux [n/cm^2-s]
+    
+    # Production from U-238 capture
+    production = sigma_c238 * phi * N238
+    
+    # Depletion by fission
+    depletion = sigma_f239 * phi * N239Pu
+    
+    return production - depletion
+
+
+def dNFPdt(S, t):
+    """
+    Time derivative of lumped fission product concentration.
+    Fission products are produced from fissions of U-235 and Pu-239.
+    Units: [atoms/cm^3-s]
+    """
+    n = S[0]  # neutron density
+    N235 = S[15]
+    N239Pu = S[17]
+    phi = eta * n * v  # neutron flux [n/cm^2-s]
+    
+    # Production from U-235 fission
+    from_U235 = Y_FP * sigma_f235 * phi * N235
+    
+    # Production from Pu-239 fission
+    from_Pu239 = Y_FP * sigma_f239 * phi * N239Pu
+    
+    return from_U235 + from_Pu239
+
+
+def dBdt(S, t):
+    """
+    Time derivative of burnup.
+    Burnup = integrated power / heavy metal mass.
+    Units: [MWd/kgU per second]
+    """
+    n = S[0]  # neutron density
+    power = qFuel(n)  # power in Watts
+    power_MW = power / 1.0e6  # convert to MW
+    
+    # dB/dt = P(MW) / M_HM(kg) / 86400(s/day)
+    # Result in MWd/kgU per second
+    return power_MW / (M_HM * 86400.0)
+
+
 def qFuel(n):
     """
-    Given neutron population return thermal power
+    Given neutron population return thermal power [W]
     """
     return Vr * VfFuel * (n * v) * Sigma_f * Ef
 
@@ -254,13 +364,11 @@ def dTcdt(S, t, mdotC):
 def diffRodWorth(h):
     """
     Improved differential control rod worth curve using cosine shape.
-    Total worth depends on mode:
-    - Normal mode: $0.1 from fully inserted to fully withdrawn
-    - Prompt Critical mode: $1.5 from fully inserted to fully withdrawn
+    Total worth: $0.1 from fully inserted to fully withdrawn
     h is fractional height: h=0 is fully inserted, h=100 is fully withdrawn
     delta_h * R(h) = reactivity change
     """
-    scalingFac = getRodWorthScaling() * 1.e-5 / beta
+    scalingFac = ROD_WORTH_SCALING * 1.e-5 / beta
     return scalingFac * np.sin(np.pi * h / 100.0) * 100.0
 
 
@@ -268,26 +376,27 @@ def intRodWorth(h1, h2):
     """
     Integral control rod worth curve.
     Returns reactivity in dollars ($/Beta)
-    Total worth depends on mode:
-    - Normal mode: $0.1 total
-    - Prompt Critical mode: $1.5 total
+    Total worth: $0.1 from fully inserted to fully withdrawn
     """
-    scalingFac = getRodWorthScaling() * 1.e-5 / beta
+    scalingFac = ROD_WORTH_SCALING * 1.e-5 / beta
     integral = lambda h: -100.0 * scalingFac * (100.0 / np.pi) * np.cos(np.pi * h / 100.0)
     return (integral(h2) - integral(h1))
 
 
 def rho(S, t, hrate, deltaT):
     """
-    Total reactivity including temperature, control rod, Xenon-135, and Samarium-149 poisoning.
+    Total reactivity including temperature, control rod, Xenon-135, Samarium-149 poisoning,
+    and burnup-induced reactivity from isotope depletion.
     Reactivity in units of Dollars  (deltaK / Beta)
     Takes control rod movement rate in (%/s)
     """
     # Temperature reactivity feedback
     rho_temp = alphaT * (S[7] - Tin)
     
-    # Control rod reactivity
-    rho_rod = intRodWorth(0., S[9])
+    # Control rod reactivity (subtracts from excess)
+    # intRodWorth gives positive value as rod is withdrawn
+    # We subtract rod worth from excess: more withdrawal = more positive reactivity
+    rho_rod = intRodWorth(0., S[9]) - RHO_EXCESS
     
     # Xenon-135 poisoning reactivity (always negative)
     X = S[11]  # Xe-135 concentration
@@ -297,14 +406,23 @@ def rho(S, t, hrate, deltaT):
     Sm = S[14]  # Sm-149 concentration
     rho_Sm = -(sigma_aSm * eta * Sm) / (nu * Sigma_f * beta)
     
-    return rho_temp + rho_rod + rho_Xe + rho_Sm
+    # Burnup-induced reactivity from isotope changes (scaled for demo timescales)
+    # Positive contribution: Pu-239 buildup adds reactivity
+    # Negative contributions: U-235 depletion and FP buildup remove reactivity
+    N235 = S[15]
+    N239Pu = S[17]
+    NFP = S[18]
+    rho_burnup = k_235 * (N235 - N235_0) + k_239 * (N239Pu - N239Pu_0) - k_FP * NFP
+    
+    return rho_temp + rho_rod + rho_Xe + rho_Sm + rho_burnup
 
 
 def reactorSystem(S, t, hrate, deltaT, mdotC=1000.e3):
     """
-    Complete reactor system with 6 delayed neutron groups, Xenon-135, and Samarium-149 poisoning.
-    State vector S = [n, C1, C2, C3, C4, C5, C6, Tfuel, Tcoolant, rodPosition, I135, Xe135, Nd149, Pm149, Sm149]
-    Total: 15 state variables
+    Complete reactor system with 6 delayed neutron groups, Xenon-135, Samarium-149 poisoning,
+    fuel isotope depletion, and burnup tracking.
+    State vector S = [n, C1-C6, Tfuel, Tcoolant, rodPosition, I135, Xe135, Nd149, Pm149, Sm149, N235, N238, N239Pu, NFP, Burnup]
+    Total: 20 state variables
     """
     reactivity = rho(S, t, hrate, deltaT)
     
@@ -315,7 +433,7 @@ def reactorSystem(S, t, hrate, deltaT, mdotC=1000.e3):
     for i in range(NUM_GROUPS):
         dSdt.append(dCdt(S, t, i))
     
-    # Add temperature, rod position, xenon, and samarium dynamics
+    # Add temperature, rod position, xenon, samarium, isotopes, and burnup dynamics
     dSdt.extend([
         dTfdt(S, t, mdotC),
         dTcdt(S, t, mdotC),
@@ -324,7 +442,12 @@ def reactorSystem(S, t, hrate, deltaT, mdotC=1000.e3):
         dXdt(S, t),
         dNddt(S, t),
         dPmdt(S, t),
-        dSmdt(S, t)
+        dSmdt(S, t),
+        dN235dt(S, t),
+        dN238dt(S, t),
+        dN239Pudt(S, t),
+        dNFPdt(S, t),
+        dBdt(S, t)
     ])
     
     return dSdt

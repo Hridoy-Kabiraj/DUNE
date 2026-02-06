@@ -8,7 +8,7 @@ DUNE is an advanced point kinetics nuclear reactor simulator with a graphical us
 
 - **Real-time Reactor Simulation**: Implements a 6-group delayed neutron precursor model based on point kinetics equations
 - **Fission Product Poisoning**: Complete Xenon-135 and Samarium-149 decay chains with reactivity feedback
-- **Interactive GUI**: Full-screen 4-panel layout with wxPython and matplotlib for comprehensive visualization
+- **Interactive GUI**: Full-screen 8-panel layout with wxPython and matplotlib for comprehensive visualization
 - **Thermal-Hydraulic Modeling**: Temperature-dependent heat transfer with Dittus-Boelter correlation
 - **Dynamic Coolant Flow Control**: Automatic flow rate adjustment based on reactor power (200-1200 kg/s)
 - **Manual Coolant Control Mode**: User-controlled coolant flow rate with independent operation
@@ -50,9 +50,17 @@ This module contains the fundamental reactor physics equations and parameters:
     - Nd-149 production from fission (γ_Nd = 0.0113)
     - Pm-149 formation and decay (half-life: 53.08 hours)
     - Sm-149 as stable poison (σ_a = 40,800 barns)
-  - Reactivity contributions: ρ = ρ_rod + ρ_temp + ρ_Xe + ρ_Sm
 
-- **Control Rod Worth**: Total reactivity worth of 0.1$ (fully inserted to fully withdrawn)
+- **Burnup and Isotope Depletion** (NEW in v0.3):
+  - **U-235 Depletion**: Fission consumption with scaled cross-section (σ_f = 585 barns)
+  - **U-238 Capture**: Conversion to Pu-239 (σ_c = 2.68 barns)
+  - **Pu-239 Buildup**: Production from U-238, consumption by fission (σ_f = 750 barns)
+  - **Fission Products**: Accumulation tracking for reactivity penalty
+  - **Burnup Tracking**: MWd/kgU with demonstration timescale scaling (BURNUP_SCALE = 1e-3)
+  - **Excess Reactivity**: Initial ρ_excess = $0.05 for subcritical startup simulation
+  - Reactivity contributions: ρ = ρ_excess + ρ_rod + ρ_temp + ρ_Xe + ρ_Sm + ρ_burnup
+
+- **Control Rod Worth**: Total reactivity worth of $0.2 (fully inserted to fully withdrawn)
   - Sinusoidal differential worth curve (peak at core midplane)
   - Realistic importance-weighted reactivity insertion
 
@@ -64,10 +72,10 @@ This module contains the fundamental reactor physics equations and parameters:
 #### 2. **reactor.py** - Reactor Control System
 The `DUNEReactor` class provides the main interface for reactor operations:
 
-- **State Vector Management**: Tracks 15 variables:
-  - [neutrons/cc, C₁-C₆ precursors, T_fuel, T_coolant, rod position, I-135, Xe-135, Nd-149, Pm-149, Sm-149]
+- **State Vector Management**: Tracks 20 variables:
+  - [neutrons/cc, C₁-C₆ precursors, T_fuel, T_coolant, rod position, I-135, Xe-135, Nd-149, Pm-149, Sm-149, N235, N238, N239Pu, NFP, Burnup]
 - **Time Integration**: Uses scipy's odeint for solving the stiff ODE system
-- **Control Rod Dynamics**: Realistic rod motion with rate limiting and 0.1$ total reactivity worth
+- **Control Rod Dynamics**: Realistic rod motion with rate limiting and $0.2 total reactivity worth
 - **PID Power Control**: Automatic power level regulation
 - **Dynamic Coolant Flow Control**: Automatic flow rate adjustment based on reactor power output
   - Power-based flow mapping: 200 kg/s (low power) to 1200 kg/s (high power)
@@ -81,11 +89,10 @@ The `DUNEReactor` class provides the main interface for reactor operations:
 #### 3. **DUNEReactor.py** - GUI and Visualization
 The graphical interface built with wxPython provides:
 
-- **Full-Screen 4-Panel Layout**:
-  - **Upper Left**: Real-time power output (MW) vs time
-  - **Upper Right**: Reactivity ($) vs time showing feedback dynamics
-  - **Lower Left**: Fuel (red) and coolant (blue) temperatures (K) vs time
-  - **Lower Right**: Xenon-135 (purple) and Samarium-149 (orange) concentrations vs time
+- **Full-Screen 8-Panel Layout** (GridSpec 3 rows × 8 columns):
+  - **Top Row**: Real-time power output (MW) vs time (full width)
+  - **Middle Row**: Reactivity ($), Fuel Temperature (K), Coolant Temperature (K)
+  - **Bottom Row**: Xenon-135, Samarium-149, Burnup (MWd/kgU), Isotope Concentrations
 
 - **Control Interfaces**:
   - Manual control rod position slider
@@ -108,7 +115,8 @@ The graphical interface built with wxPython provides:
   - Records all critical parameters every 0.5 seconds
   - Saves to SimulationData/ folder automatically
   - Includes: time, neutron density, power, reactivity, temperatures, flow rate, rod position, Xe-135, Sm-149
-  - Full poison concentration tracking for post-analysis
+  - Burnup tracking: Burnup (MWd/kgU), U-235, U-238, Pu-239, fission products
+  - Full poison and isotope concentration data for post-analysis
 
 - **Arduino Communication**: Serial interface to physical reactor model
 
@@ -167,11 +175,13 @@ Where:
 ### Reactivity Feedback
 
 The total reactivity includes contributions from:
-- **Control Rod Position**: Primary control mechanism (0.1$ total worth)
+- **Excess Reactivity**: Initial core excess reactivity ($0.05) for subcritical startup
+- **Control Rod Position**: Primary control mechanism ($0.2 total worth)
 - **Fuel Temperature**: Doppler broadening effect (negative feedback)
 - **Coolant Temperature**: Moderator temperature coefficient (negative feedback)
 - **Xenon-135 Poisoning**: Transient neutron absorption (negative, time-dependent)
 - **Samarium-149 Poisoning**: Equilibrium neutron absorption (negative, builds slowly)
+- **Fuel Burnup**: U-235 depletion and Pu-239 buildup effects (negative over long timescales)
 
 ### Thermal Hydraulics
 
@@ -196,20 +206,34 @@ Where:
 
 ### GUI Overview
 
-The DUNE simulator features a comprehensive full-screen interface with four synchronized real-time plots and extensive monitoring capabilities.
+The DUNE simulator features a comprehensive full-screen interface with eight synchronized real-time plots and extensive monitoring capabilities.
 
-### Full-Screen 4-Panel GUI
+### Full-Screen 8-Panel GUI
 ![GUI](Media/Images/GUI.png)
 
-The main interface shows four synchronized plots:
-- **Upper Left Panel**: Real-time thermal power output (MW) vs time
+The main interface shows eight synchronized plots arranged in a 3-row grid layout:
+
+**Top Row (Full Width):**
+- **Power Plot**: Real-time thermal power output (MW) vs time
   - Shows exponential rise during startup, steady-state operation, and decay during shutdown
-- **Upper Right Panel**: Total reactivity ($) vs time showing all feedback contributions
-  - Displays contributions from control rods, temperature feedback, and poison effects
-- **Lower Left Panel**: Fuel (red) and coolant (blue) temperatures (K) vs time
-  - Demonstrates thermal inertia and heat transfer dynamics
-- **Lower Right Panel**: Xenon-135 (purple) and Samarium-149 (orange) concentrations (atoms/cm³) vs time
-  - Tracks fission product poison buildup and decay in real-time
+
+**Middle Row (3 Panels):**
+- **Reactivity Plot**: Total reactivity ($) vs time showing all feedback contributions
+  - Displays contributions from control rods, temperature feedback, poison effects, and burnup
+- **Fuel Temperature Plot**: Fuel temperature (K) vs time (red)
+  - Demonstrates thermal inertia and Doppler feedback effects
+- **Coolant Temperature Plot**: Coolant temperature (K) vs time (blue)
+  - Shows heat transfer dynamics and flow rate effects
+
+**Bottom Row (4 Panels):**
+- **Xenon-135 Plot**: Xe-135 concentration (atoms/cm³) vs time (purple)
+  - Tracks transient fission product poison buildup and decay
+- **Samarium-149 Plot**: Sm-149 concentration (atoms/cm³) vs time (orange)
+  - Shows slow equilibrium poison accumulation
+- **Burnup Plot**: Core average burnup (MWd/kgU) vs time
+  - Tracks cumulative fuel depletion over operation
+- **Isotope Plot**: Relative concentrations of U-235, U-238, Pu-239, and fission products
+  - Visualizes fuel composition evolution during burnup
 
 **Key GUI Features**:
 - Live parameter updates every 0.5 seconds
@@ -369,9 +393,9 @@ python DUNEReactor.py
 - **Power Ctrl Checkbox**: Enable/disable automatic PID power control
 - **Coolant Flow**: Adjust coolant mass flow rate (200-1200 kg/s)
 - **Flow Ctrl Checkbox**: Enable/disable manual coolant flow control
-- **Prompt Jump Mode Checkbox**: Instantly inserts ~$0.004 reactivity for demonstrating prompt jump phenomenon
+- **Prompt Jump Mode Checkbox**: Instantly inserts ~$0.003 reactivity for demonstrating prompt jump phenomenon
   - ⚠️ **WARNING**: For educational demonstration only!
-  - Instantly withdraws control rod by 8% when activated
+  - Instantly withdraws control rod by 3% when activated
   - Automatic SCRAM remains enabled for safety
   - Demonstrates the rapid power increase characteristic of positive reactivity insertion
 - **SCRAM Button**: Emergency shutdown - inserts all control rods immediately
@@ -379,13 +403,19 @@ python DUNEReactor.py
 - **Pause**: Freeze simulation to examine current state
 
 #### Display Monitors
-- **Power Plot** (Upper Left): Real-time reactor power in MW
-- **Reactivity Plot** (Upper Right): Total reactivity in dollars ($) showing all feedback contributions
-- **Temperature Plot** (Lower Left): Fuel temperature (red) and coolant temperature (blue) in Kelvin
-- **Poison Plot** (Lower Right): Xenon-135 (purple) and Samarium-149 (orange) concentrations in atoms/cm³
+- **Power Plot** (Top Row): Real-time reactor power in MW spanning full width
+- **Reactivity Plot** (Middle Left): Total reactivity in dollars ($) showing all feedback contributions
+- **Temperature Plots** (Middle Center/Right): Separate fuel and coolant temperature displays in Kelvin
+- **Poison Plots** (Bottom Left/Center-Left): Xenon-135 and Samarium-149 concentrations in atoms/cm³
+- **Burnup Plot** (Bottom Center-Right): Core burnup in MWd/kgU
+- **Isotope Plot** (Bottom Right): Relative U-235, U-238, Pu-239, and FP concentrations
 - **Rod Height Indicator**: Vertical bar showing current rod position
-- **Xenon-135 Monitor**: Real-time concentration display in scientific notation
-- **Samarium-149 Monitor**: Real-time concentration display in scientific notation
+
+**Value Panel (Scrollable with Section Headers):**
+- **POWER & REACTIVITY**: Power (MW), Reactivity ($), Rod position (%)
+- **TEMPERATURE**: Fuel temperature (K), Coolant temperature (K), Flow rate (kg/s)
+- **FP POISONS**: Xenon-135 (atoms/cm³), Samarium-149 (atoms/cm³)
+- **BURNUP & ISOTOPES**: Burnup (MWd/kgU), U-235, U-238, Pu-239 relative concentrations
 - **Time Scale**: Adjustable zoom for viewing different time windows
 
 ### Operational Guidelines
@@ -414,10 +444,11 @@ python DUNEReactor.py
 - **Storage Location**: Data saved in `SimulationData/` folder
 - **Filename Format**: `reactor_sim_YYYY-MM-DD_HH-MM-SS.csv`
 - **Logging Interval**: Data recorded every 0.5 seconds
-- **Saved Parameters**: 
+- **Saved Parameters** (15 columns): 
   - Time, neutron density, power (MW), reactivity ($)
   - Fuel temperature, coolant temperature, flow rate, rod position
   - Xenon-135 concentration, Samarium-149 concentration
+  - Burnup (MWd/kgU), U-235, U-238, Pu-239, Fission Products
 - **File Closure**: CSV automatically saved when simulation exits
 - **Post-Processing**: Open CSV files in Excel, MATLAB, Python, or other analysis tools
 - **Long-Term Studies**: Ideal for analyzing poison transients and equilibrium behavior
@@ -467,7 +498,7 @@ The simulator includes realistic safety features:
 - **WARNING**: For educational observation only!
 - Start reactor at low-to-moderate power level
 - **Enable Prompt Jump Mode** by checking the checkbox in the GUI
-  - This instantly withdraws control rod by 8%, inserting ~$0.004 reactivity
+  - This instantly withdraws control rod by 3%, inserting ~$0.003 reactivity
 - Observe the characteristic prompt jump in power
 - Note how the power stabilizes due to temperature feedback
 - Automatic SCRAM remains active for safety
@@ -532,7 +563,8 @@ The simulator includes realistic safety features:
 - Lumped parameter thermal hydraulics (0D approximation)
 - Point kinetics (spatially averaged neutronics)
 - Representative of small research reactor or PWR unit cell
-- Control rod worth calibrated to 0.1$ for realistic control margin
+- Control rod worth calibrated to $0.2 for realistic control margin
+- Burnup and isotope depletion with scaled coefficients for demonstration timescales
 
 ### Performance
 - Real-time capable on modern hardware
@@ -584,7 +616,8 @@ Potential improvements and extensions:
 ### Physics Models
 - [x] Xenon-135 poisoning dynamics (Completed v0.2)
 - [x] Samarium-149 poisoning dynamics (Completed v0.2)
-- [ ] Burnup and fuel depletion tracking
+- [x] Burnup and fuel depletion tracking (Completed v0.3)
+- [x] Isotope depletion: U-235, U-238, Pu-239, fission products (Completed v0.3)
 - [ ] Multi-region core model (radial/axial variations)
 - [ ] Improved neutron kinetics with spatial effects
 
@@ -596,8 +629,10 @@ Potential improvements and extensions:
 
 ### Visualization
 - [x] CSV data export for post-processing (Completed v0.1)
-- [x] 4-panel full-screen layout (Completed v0.2)
+- [x] 8-panel full-screen layout with GridSpec (Completed v0.3)
 - [x] Poison concentration monitoring (Completed v0.2)
+- [x] Burnup and isotope concentration displays (Completed v0.3)
+- [x] Scrollable value panel with section headers (Completed v0.3)
 - [ ] 3D reactor core visualization
 - [ ] Neutron flux distribution animation
 - [ ] Export data to HDF5 format
@@ -696,7 +731,19 @@ A: It should work but may be slow. The GUI is computationally intensive. Conside
 
 ## Version History
 
-### Version 0.2 (February 2026 - Current)
+### Version 0.3 (February 2026 - Current)
+- **NEW**: Burnup and fuel depletion tracking with real-time display
+- **NEW**: Isotope concentration tracking: U-235, U-238, Pu-239, fission products
+- **NEW**: 8-panel GridSpec GUI layout (Power, Reactivity, Fuel Temp, Coolant Temp, Xe-135, Sm-149, Burnup, Isotopes)
+- **NEW**: Scrollable value panel with organized section headers
+- **NEW**: Burnup reactivity feedback contribution to total reactivity
+- **NEW**: Excess reactivity ($0.05) for realistic subcritical startup
+- **NEW**: Expanded CSV logging with 15 columns including all isotope data
+- **UPDATED**: Control rod total worth increased to $0.2 (from $0.1)
+- **UPDATED**: State vector expanded to 20 dimensions (added N235, N238, N239Pu, NFP, Burnup)
+- **IMPROVED**: Scaled burnup coefficients for demonstration timescales (BURNUP_SCALE = 1e-3)
+
+### Version 0.2 (February 2026)
 - **NEW**: Xenon-135 fission product poisoning with complete I-135 → Xe-135 decay chain
 - **NEW**: Samarium-149 fission product poisoning with Nd-149 → Pm-149 → Sm-149 decay chain
 - **NEW**: Full-screen 4-panel GUI layout with synchronized plots
@@ -726,11 +773,11 @@ A: It should work but may be slow. The GUI is computationally intensive. Conside
 - wxPython GUI with matplotlib plots
 - Automatic SCRAM systems
 
-### Planned for Version 0.3
+### Planned for Version 0.4
 - Xenon oscillation studies and load-following scenarios
 - Enhanced parameter configuration UI
 - Pre-configured scenario library (startup, shutdown, load-follow, etc.)
-- Burnup calculations with continuous fuel depletion
+- Multi-zone burnup with radial/axial distribution
 - Enhanced documentation and video tutorials
 
 ## Authors

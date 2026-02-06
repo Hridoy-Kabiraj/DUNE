@@ -66,7 +66,7 @@ class MyFrame1 ( wx.Frame ):
 		
 		self.promptCriticalBox = wx.CheckBox( self.m_panel1, wx.ID_ANY, u"Prompt Jump Mode", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.promptCriticalBox.SetForegroundColour( wx.Colour( 255, 0, 0 ) )
-		self.promptCriticalBox.SetToolTip( u"Instantly inserts ~$0.004 reactivity by withdrawing control rod" )
+		self.promptCriticalBox.SetToolTip( u"Instantly inserts ~$0.003 reactivity by withdrawing control rod" )
 		bSizer1.Add( self.promptCriticalBox, 0, wx.ALL, 5 )
 		
 		self.m_staticline2 = wx.StaticLine( self.m_panel1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
@@ -99,7 +99,8 @@ class MyFrame1 ( wx.Frame ):
 		self.m_panel1.Layout()
 		fgSizer1.Add( self.m_panel1, 0, wx.ALL|wx.EXPAND, 5 )
 		
-		self.m_panel4 = wx.Panel( self, wx.ID_ANY, wx.Point( -1,-1 ), wx.Size( 220,-1 ), wx.TAB_TRAVERSAL )
+		self.m_panel4 = wx.ScrolledWindow( self, wx.ID_ANY, wx.Point( -1,-1 ), wx.Size( 220,-1 ), wx.TAB_TRAVERSAL|wx.VSCROLL )
+		self.m_panel4.SetScrollRate( 0, 10 )
 		bSizer2 = wx.BoxSizer( wx.VERTICAL )
 		
 		self.m_staticText8 = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Plot Zoom", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -112,6 +113,11 @@ class MyFrame1 ( wx.Frame ):
 		self.m_staticline3 = wx.StaticLine( self.m_panel4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
 		bSizer2.Add( self.m_staticline3, 0, wx.EXPAND |wx.ALL, 5 )
 		
+		self.m_staticTextPowerSection = wx.StaticText( self.m_panel4, wx.ID_ANY, u"── POWER & REACTIVITY ──", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticTextPowerSection.Wrap( -1 )
+		self.m_staticTextPowerSection.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		bSizer2.Add( self.m_staticTextPowerSection, 0, wx.ALL, 5 )
+		
 		self.powOut = wx.TextCtrl( self.m_panel4, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer2.Add( self.powOut, 0, wx.ALL, 5 )
 		
@@ -119,8 +125,21 @@ class MyFrame1 ( wx.Frame ):
 		self.m_staticText10.Wrap( -1 )
 		bSizer2.Add( self.m_staticText10, 0, wx.ALL, 5 )
 		
+		self.reactivityOut = wx.TextCtrl( self.m_panel4, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.reactivityOut.SetMaxLength( 0 ) 
+		bSizer2.Add( self.reactivityOut, 0, wx.ALL, 5 )
+		
+		self.m_staticTextReactivity = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Reactivity [$]", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticTextReactivity.Wrap( -1 )
+		bSizer2.Add( self.m_staticTextReactivity, 0, wx.ALL, 5 )
+		
 		self.m_staticline8 = wx.StaticLine( self.m_panel4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
 		bSizer2.Add( self.m_staticline8, 0, wx.EXPAND |wx.ALL, 5 )
+		
+		self.m_staticTextTempSection = wx.StaticText( self.m_panel4, wx.ID_ANY, u"── TEMPERATURE ──", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticTextTempSection.Wrap( -1 )
+		self.m_staticTextTempSection.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		bSizer2.Add( self.m_staticTextTempSection, 0, wx.ALL, 5 )
 		
 		self.fueltOut = wx.TextCtrl( self.m_panel4, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.fueltOut.SetMaxLength( 0 ) 
@@ -138,13 +157,13 @@ class MyFrame1 ( wx.Frame ):
 		self.m_staticText4.Wrap( -1 )
 		bSizer2.Add( self.m_staticText4, 0, wx.ALL, 5 )
 		
-		self.reactivityOut = wx.TextCtrl( self.m_panel4, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.reactivityOut.SetMaxLength( 0 ) 
-		bSizer2.Add( self.reactivityOut, 0, wx.ALL, 5 )
+		self.m_staticlinePoisonSection = wx.StaticLine( self.m_panel4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		bSizer2.Add( self.m_staticlinePoisonSection, 0, wx.EXPAND |wx.ALL, 5 )
 		
-		self.m_staticTextReactivity = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Reactivity [$]", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.m_staticTextReactivity.Wrap( -1 )
-		bSizer2.Add( self.m_staticTextReactivity, 0, wx.ALL, 5 )
+		self.m_staticTextPoisonSection = wx.StaticText( self.m_panel4, wx.ID_ANY, u"── FP POISONS ──", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticTextPoisonSection.Wrap( -1 )
+		self.m_staticTextPoisonSection.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		bSizer2.Add( self.m_staticTextPoisonSection, 0, wx.ALL, 5 )
 		
 		self.xenonOut = wx.TextCtrl( self.m_panel4, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.xenonOut.SetMaxLength( 0 ) 
@@ -161,6 +180,46 @@ class MyFrame1 ( wx.Frame ):
 		self.m_staticText13 = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Sm-149\n[atoms/cm\u00b3]", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_staticText13.Wrap( -1 )
 		bSizer2.Add( self.m_staticText13, 0, wx.ALL, 5 )
+		
+		self.m_staticlineBurnupSection = wx.StaticLine( self.m_panel4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		bSizer2.Add( self.m_staticlineBurnupSection, 0, wx.EXPAND |wx.ALL, 5 )
+		
+		self.m_staticTextBurnupSection = wx.StaticText( self.m_panel4, wx.ID_ANY, u"── BURNUP & ISOTOPES ──", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticTextBurnupSection.Wrap( -1 )
+		self.m_staticTextBurnupSection.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		bSizer2.Add( self.m_staticTextBurnupSection, 0, wx.ALL, 5 )
+		
+		self.burnupOut = wx.TextCtrl( self.m_panel4, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.burnupOut.SetMaxLength( 0 ) 
+		bSizer2.Add( self.burnupOut, 0, wx.ALL, 5 )
+		
+		self.m_staticTextBurnup = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Burnup\n[MWd/kgU]", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticTextBurnup.Wrap( -1 )
+		bSizer2.Add( self.m_staticTextBurnup, 0, wx.ALL, 5 )
+		
+		self.u235Out = wx.TextCtrl( self.m_panel4, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.u235Out.SetMaxLength( 0 ) 
+		bSizer2.Add( self.u235Out, 0, wx.ALL, 5 )
+		
+		self.m_staticTextU235 = wx.StaticText( self.m_panel4, wx.ID_ANY, u"U-235\n[atoms/cm\u00b3]", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticTextU235.Wrap( -1 )
+		bSizer2.Add( self.m_staticTextU235, 0, wx.ALL, 5 )
+		
+		self.u238Out = wx.TextCtrl( self.m_panel4, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.u238Out.SetMaxLength( 0 ) 
+		bSizer2.Add( self.u238Out, 0, wx.ALL, 5 )
+		
+		self.m_staticTextU238 = wx.StaticText( self.m_panel4, wx.ID_ANY, u"U-238\n[atoms/cm\u00b3]", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticTextU238.Wrap( -1 )
+		bSizer2.Add( self.m_staticTextU238, 0, wx.ALL, 5 )
+		
+		self.pu239Out = wx.TextCtrl( self.m_panel4, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.pu239Out.SetMaxLength( 0 ) 
+		bSizer2.Add( self.pu239Out, 0, wx.ALL, 5 )
+		
+		self.m_staticTextPu239 = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Pu-239\n[atoms/cm\u00b3]", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticTextPu239.Wrap( -1 )
+		bSizer2.Add( self.m_staticTextPu239, 0, wx.ALL, 5 )
 		
 		self.m_staticline14 = wx.StaticLine( self.m_panel4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
 		bSizer2.Add( self.m_staticline14, 0, wx.EXPAND |wx.ALL, 5 )
