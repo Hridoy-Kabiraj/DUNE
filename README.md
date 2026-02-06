@@ -450,7 +450,7 @@ python DUNEReactor.py
 ### Operational Guidelines
 
 #### Safe Startup Procedure
-1. Verify coolant flow is adequate (default 1800 kg/s)
+1. Verify coolant flow is adequate (default 200 kg/s)
 2. Slowly withdraw control rods (increase position from 0%)
 3. Watch reactivity approach zero dollars
 4. Continue rod withdrawal until desired power is reached
@@ -460,7 +460,6 @@ python DUNEReactor.py
 - **Subcritical** ($ρ < 0$): Power decreasing, reactor shutting down
 - **Critical** ($ρ = 0$): Power stable, equilibrium condition
 - **Supercritical** ($ρ > 0$): Power increasing
-- **Prompt Critical** ($ρ > $1.00$): Dangerous! Very rapid power increase
 
 #### Temperature Monitoring
 - **Fuel Temperature**: Must stay below 1700 K (automatic SCRAM above)
@@ -505,7 +504,7 @@ The simulator includes realistic safety features:
 
 #### Experiment 1: Reactor Period
 - Start with rods at 0%
-- Quickly move to 45% and hold
+- Quickly move to 35.5% and hold (Write 35.5 in the Rod SetPoint Box)
 - Observe exponential power rise
 - Calculate reactor period from plot: $T = \frac{t}{\ln(P_2/P_1)}$
 
@@ -700,8 +699,8 @@ For comprehensive technical documentation, including detailed reactor physics de
 
 This simulator has been used in:
 - University reactor physics courses
-- Public science demonstrations
-- Nuclear engineering department open houses
+- Science demonstrations
+- Nuclear engineering department
 
 ## Acknowledgments
 
