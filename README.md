@@ -14,6 +14,7 @@ DUNE is an advanced point kinetics nuclear reactor simulator with a graphical us
 - **Manual Coolant Control Mode**: User-controlled coolant flow rate with independent operation
 - **Control Systems**: Supports both manual control rod operation and automatic PID-based power control
 - **Safety Systems**: Automatic SCRAM functionality based on temperature setpoints
+- **Burnup & Isotope Depletion**: Continuous Burnup with effect on reactivity.
 - **Arduino Integration**: Interfaces with physical 3D printed reactor model for hands-on demonstrations
 - **CSV Data Logging**: Automatic timestamped data logging including poison concentrations
 - **Educational Tool**: Designed for nuclear engineering education
@@ -213,23 +214,25 @@ The DUNE simulator features a comprehensive full-screen interface with eight syn
 
 The main interface shows eight synchronized plots arranged in a 3-row grid layout:
 
-**Top Row (Full Width):**
+**Top Row (2 Panels):**
 - **Power Plot**: Real-time thermal power output (MW) vs time
   - Shows exponential rise during startup, steady-state operation, and decay during shutdown
-
-**Middle Row (3 Panels):**
 - **Reactivity Plot**: Total reactivity ($) vs time showing all feedback contributions
   - Displays contributions from control rods, temperature feedback, poison effects, and burnup
-- **Fuel Temperature Plot**: Fuel temperature (K) vs time (red)
-  - Demonstrates thermal inertia and Doppler feedback effects
-- **Coolant Temperature Plot**: Coolant temperature (K) vs time (blue)
-  - Shows heat transfer dynamics and flow rate effects
 
-**Bottom Row (4 Panels):**
-- **Xenon-135 Plot**: Xe-135 concentration (atoms/cm³) vs time (purple)
+**Middle Row (2 Panels):**
+- **Fuel & Coolant Temperature Plot**: 
+  - Fuel temperature (K) vs time (red)
+  - Demonstrates thermal inertia and Doppler feedback effects
+  - Coolant temperature (K) vs time (blue)
+  - Shows heat transfer dynamics and flow rate effects
+- **Xenon-135 & Samarium-149 Plot**: 
+  - Xe-135 concentration (atoms/cm³) vs time (purple)
   - Tracks transient fission product poison buildup and decay
-- **Samarium-149 Plot**: Sm-149 concentration (atoms/cm³) vs time (orange)
+  - Sm-149 concentration (atoms/cm³) vs time (orange)
   - Shows slow equilibrium poison accumulation
+
+**Bottom Row (4 Panels)**:
 - **Burnup Plot**: Core average burnup (MWd/kgU) vs time
   - Tracks cumulative fuel depletion over operation
 - **Isotope Plot**: Relative concentrations of U-235, U-238, Pu-239, and fission products
@@ -241,12 +244,33 @@ The main interface shows eight synchronized plots arranged in a 3-row grid layou
 - Real-time numerical displays for all critical parameters
 - Synchronized x-axis across all plots for correlation analysis
 
+### Control Panel Section
+![Control Panel](Media/Images/Control%20Panel.png)
+- SCARM Button for manual SCARM
+- Pause Button for pause the simulation
+- Power Ctrl for manual power control
+- Flow Ctrl for manually control the flow rate
+- Prompt Jump Mode for analysing the prompt jump scenario
+- Rod SetPoint Slider for manual rod position control
+- Rod % Withdrawn shows the current rod position
+
+### Observation Panel Section
+![Observation panel](Media/Images/Graph%20Value%20panel.png)
+- Plot Zoom for changing the x-axix time scale for better understanding of transient 
+- And the below boxes are showing the exact value of different parameters in the graphs
+
 ### Manual Power Control Mode
-![Power Control Mode](Media/Images/Power%20Control%20Mode.png)
+**Initial Condition before activating the Power Control Mode:**
+![Power Control Mode initial](Media/Images/Power%20Control%20Mode%20Before%20Before.png)
+**After activating the Power Control Mode for a targeted power:**
+![Power Control Mode After](Media/Images/Power%20Control%20Mode%20After.png)
 Autometically adjust the control rod position through PID controller to achieve the targeted power level.
 
 ### Manual Flow Control Mode
-![Flow Control Mode](Media/Images/Flow%20Control%20Mode.png)
+**Initial Condition before activating the Flow Control Mode:**
+![Flow Control Mode before](Media/Images/Flow%20Control%20Mode%20Before.png)
+**After activating the Flow Control Mode and Changing the Flow rate:**
+![Flow Control Mode After](Media/Images/Flow%20Control%20Mode%20After.png)
 
 Independent coolant flow control enables investigation of thermal-hydraulic effects decoupled from automatic power-based control.
 
@@ -256,14 +280,14 @@ Independent coolant flow control enables investigation of thermal-hydraulic effe
 This image demonstrates a typical reactor startup sequence showing exponential power rise as control rods are withdrawn. The behavior follows the reactor period equation demonstrating subcritical to critical transition.
 
 ### Prompt Jump Phenomenon
-![Reactor Prompt Jump Transient](Media/Images/Reactor%20Transient(Prompt%20Jump).png)
+![Reactor Prompt Jump Transient](Media/Images/Prompt%20Jump.png)
 
-This captures a reactivity insertion accident resulting in a prompt jump. When reactivity exceeds one dollar ($ρ > $1.00), the reactor becomes prompt critical, causing an instantaneous power jump followed by temperature feedback stabilization.
+This captures a reactivity insertion accident resulting in a prompt jump. When we activate the Prompt jump Mode, a reactivity of 0.003$ is being inserted instantly, causing an instantaneous power jump followed by temperature feedback stabilization.
 
 ### SCRAM Event
 ![Reactor SCRAM Event](Media/Images/Reactor%20SCARM.png)
 
-Documentation of an automatic SCRAM (Safety Control Rod Axe Man) event triggered by exceeding temperature safety limits. Shows rapid power decrease as control rods are fully inserted and negative reactivity is added.
+Here the SCARM is triggred by the manual SCARM button. Shows rapid power decrease as control rods are fully inserted and negative reactivity is added. An automatic SCRAM (Safety Control Rod Axe Man) event can be also triggered by exceeding temperature safety limits.
 
 ### Xenon and Samarium Poisoning
 ![Xenon and Samarium Concentrations](Media/Images/Xenon%20%26%20Samarium%20Poison%20Graph.png)
@@ -272,6 +296,11 @@ Long-term simulation showing fission product poison buildup:
 - **Xenon-135**: Reaches equilibrium in ~40-50 hours with characteristic oscillations
 - **Samarium-149**: Builds slowly over days, approaching stable equilibrium
 - Both poisons insert negative reactivity requiring compensating rod withdrawal
+
+### Burnup & Isptope Depletion
+![Burnup and Isotope Depletion](Media/Images/Burnup%20&%20Isotope%20Depletion.png)
+
+Shows the Continuous Burnup of fuel and the continuous change in concentration of the nuclides due to Burnup.
 
 ## Video Demonstrations
 
