@@ -9,7 +9,6 @@
 # ----------
 #
 # 1/09/2025     Creation.
-# 2/04/2026     Renamed from legoReactor to DUNEReactor
 #
 
 import time
