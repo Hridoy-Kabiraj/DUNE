@@ -302,6 +302,11 @@ Long-term simulation showing fission product poison buildup:
 
 Shows the Continuous Burnup of fuel and the continuous change in concentration of the nuclides due to Burnup.
 
+### Simulation Data Collection
+![Data Collection](Media/Images/CSV%20Data.png)
+
+All the Simulation data will be autometically saved in a CSV file inside the [SimulationData](SimulationData) folder. The name will be saved as reactor_sim_Date_Time.csv
+
 ## Video Demonstrations
 
 The following video demonstrations showcase the DUNE reactor simulator in action:
