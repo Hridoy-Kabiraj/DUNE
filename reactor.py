@@ -5,7 +5,7 @@ from reactorPhysics import qFuel
 from reactorPhysics import rho
 import reactorPhysics
 from reactorPhysics import N235_0, N238_0, N239Pu_0, NFP_0
-from reactorPhysics import beta_i, lambda_i, Lamb
+from reactorPhysics import beta_i, lambda_i, Lamb, S_source, beta
 #import matplotlib.pyplot as pl
 import time
 
@@ -22,9 +22,10 @@ class DUNEReactor(object):
         """ Initialize reactor system state """
         if initialSystemState is None:
             # Default: [n, C1-C6, Tfuel, Tcoolant, rodPosition, I135, Xe135, Nd149, Pm149, Sm149, N235, N238, N239Pu, NFP, Burnup]
-            # Start at source level (very low neutron population)
-            # Reactor will build up power when brought to criticality by withdrawing rods
-            n0 = 1.e3  # Source level neutrons - essentially zero power at startup
+            # Neutron population maintained by external source S_source
+            # At subcritical equilibrium: n_eq ≈ S_source * Lamb / (beta - rho)
+            # The source provides continuous neutrons even at shutdown
+            n0 = S_source * Lamb / beta  # Source-equilibrium neutron population at critical
             # Initialize precursors at equilibrium: C_i = beta_i * n / (lambda_i * Lamb)
             C_init = list(beta_i * n0 / (lambda_i * Lamb))
             I0 = 0.0  # Start with no Iodine-135

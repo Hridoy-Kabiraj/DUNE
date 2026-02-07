@@ -28,6 +28,11 @@ alphaT = -0.007 * 1.e-5 / beta  # pcm / K / beta  reactivity per kelvin
 # Number of delayed neutron groups
 NUM_GROUPS = 6
 
+# External neutron source strength [neutrons/cm^3/s]
+# This represents spontaneous fission sources, startup sources, etc.
+# Typical startup source: ~1e3 to 1e6 n/cm^3/s
+S_source = 1.0e5  # neutron source rate [n/cm^3/s]
+
 # Control rod worth scaling factor for $0.2 total worth
 ROD_WORTH_SCALING = 0.02042
 
@@ -97,11 +102,18 @@ k_FP = 5.0e-23 / beta * BURNUP_SCALE    # $ per (atom/cm^3) for fission products
 
 def dndt(S, t, reactivity):
     """
-    Time derivative of neutron population with 6 delayed neutron groups.
+    Time derivative of neutron population with 6 delayed neutron groups
+    and external neutron source.
+    
+    dn/dt = (rho - beta)/Lambda * n + sum(lambda_i * C_i) + S_source
+    
+    The source term S_source provides a continuous supply of neutrons,
+    representing startup sources, spontaneous fission, or (alpha,n) reactions.
     """
     # Sum contributions from all delayed neutron groups
     delayed_contribution = np.sum(lambda_i * S[1:7])
-    ndot = (reactivity - beta) / Lamb * S[0] + delayed_contribution
+    # Point kinetics equation with external source
+    ndot = (reactivity - beta) / Lamb * S[0] + delayed_contribution + S_source
     if S[0] <= 0. and ndot < 0.:
         return 0.
     else:
