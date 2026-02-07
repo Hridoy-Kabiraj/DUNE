@@ -29,6 +29,7 @@ DUNE is an advanced point kinetics nuclear reactor simulator with a graphical us
 This module contains the fundamental reactor physics equations and parameters:
 
 - **Point Kinetics Model**: Implements the time-dependent neutron diffusion equations with 6 delayed neutron groups for U-235
+- **External Neutron Source**: Constant source term S = 10⁵ n/cm³/s representing spontaneous fission, startup sources, or (α,n) reactions
 - **Delayed Neutron Data**: 
   - Beta values (β₁ through β₆): Individual delayed neutron fractions
   - Lambda values (λ₁ through λ₆): Decay constants ranging from 0.0124 to 3.01 s⁻¹
@@ -154,10 +155,10 @@ The circuit diagram shows the complete wiring configuration for the Arduino-base
 
 ### Neutron Kinetics Equations
 
-The simulator solves the coupled point kinetics equations with 6 delayed neutron groups:
+The simulator solves the coupled point kinetics equations with 6 delayed neutron groups and an external neutron source:
 
 ```math
-\frac{dn}{dt} = \frac{\rho - \beta}{\Lambda}n + \sum_{i=1}^{6}\lambda_i C_i
+\frac{dn}{dt} = \frac{\rho - \beta}{\Lambda}n + \sum_{i=1}^{6}\lambda_i C_i + S
 ```
 
 ```math
@@ -172,6 +173,7 @@ Where:
 - $\beta_i$ = delayed neutron fraction for group i
 - $\Lambda$ = prompt neutron lifetime
 - $\lambda_i$ = decay constant for group i
+- $S$ = external neutron source strength (n/cm³/s), representing spontaneous fission, startup sources, or (α,n) reactions
 
 ### Reactivity Feedback
 
@@ -765,6 +767,7 @@ A: It should work but may be slow. The GUI is computationally intensive. Conside
 ## Version History
 
 ### Version 0.3 (February 2026 - Current)
+- **NEW**: External neutron source term S in point kinetics equation for realistic subcritical neutron population
 - **NEW**: Burnup and fuel depletion tracking with real-time display
 - **NEW**: Isotope concentration tracking: U-235, U-238, Pu-239, fission products
 - **NEW**: 8-panel GridSpec GUI layout (Power, Reactivity, Fuel Temp, Coolant Temp, Xe-135, Sm-149, Burnup, Isotopes)
