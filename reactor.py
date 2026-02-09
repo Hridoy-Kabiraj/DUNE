@@ -217,9 +217,9 @@ class DUNEReactor(object):
         """
         self.promptCriticalMode = promptCriticalToggle
         if promptCriticalToggle:
-            # Instantly withdraw rod by ~3% to insert ~$0.003 reactivity
-            # (with $0.2 total rod worth, 3% withdrawal ≈ $0.003)
-            newPos = min(self.S[9] + 3.0, 100.0)
+            # Instantly withdraw rod by ~6% to insert ~$0.003 reactivity
+            # (with $0.10 total rod worth, 6% withdrawal near midplane ≈ $0.003)
+            newPos = min(self.S[9] + 6.0, 100.0)
             self.S[9] = newPos
             self.hrate = 0.0  # Stop any ongoing rod movement
 

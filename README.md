@@ -358,7 +358,7 @@ DUNE requires Python 3.6 or higher and the following dependencies:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/hridoy/DUNE.git
+   git clone https://github.com/Hridoy-Kabiraj/DUNE.git
    cd DUNE
    ```
 
@@ -431,7 +431,7 @@ python DUNEReactor.py
 - **Flow Ctrl Checkbox**: Enable/disable manual coolant flow control
 - **Prompt Jump Mode Checkbox**: Instantly inserts ~$0.003 reactivity for demonstrating prompt jump phenomenon
   - ⚠️ **WARNING**: For educational demonstration only!
-  - Instantly withdraws control rod by 3% when activated
+  - Instantly withdraws control rod by 6% when activated
   - Automatic SCRAM remains enabled for safety
   - Demonstrates the rapid power increase characteristic of positive reactivity insertion
 - **SCRAM Button**: Emergency shutdown - inserts all control rods immediately
@@ -511,7 +511,7 @@ The simulator includes realistic safety features:
 
 #### Experiment 1: Reactor Period
 - Start with rods at 0%
-- Quickly move to 35.5% and hold (Write 35.5 in the Rod SetPoint Box)
+- Quickly move to 54% and hold (Write 54 in the Rod SetPoint Box)
 - Observe exponential power rise
 - Calculate reactor period from plot: $T = \frac{t}{\ln(P_2/P_1)}$
 

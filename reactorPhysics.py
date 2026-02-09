@@ -33,13 +33,13 @@ NUM_GROUPS = 6
 # Typical startup source: ~1e3 to 1e6 n/cm^3/s
 S_source = 1.0e5  # neutron source rate [n/cm^3/s]
 
-# Control rod worth scaling factor for $0.2 total worth
-ROD_WORTH_SCALING = 0.02042
+# Control rod worth scaling factor for $0.10 total worth
+ROD_WORTH_SCALING = 0.01021
 
 # Excess reactivity of fresh fuel ($ dollars)
 # This represents the excess reactivity built into fresh fuel to compensate for burnup
 # Rods must be inserted to compensate: at rod=0, reactor is subcritical
-# At ~33% rod withdrawal, reactor reaches criticality (due to sinusoidal worth curve)
+# At 50% rod withdrawal, reactor reaches criticality (sinusoidal worth curve)
 RHO_EXCESS = 0.05  # $0.05 excess reactivity with fresh fuel
 
 # Xenon-135 and Iodine-135 parameters
@@ -405,10 +405,13 @@ def rho(S, t, hrate, deltaT):
     # Temperature reactivity feedback
     rho_temp = alphaT * (S[7] - Tin)
     
-    # Control rod reactivity (subtracts from excess)
-    # intRodWorth gives positive value as rod is withdrawn
-    # We subtract rod worth from excess: more withdrawal = more positive reactivity
-    rho_rod = intRodWorth(0., S[9]) - RHO_EXCESS
+    # Control rod reactivity
+    # Physical interpretation:
+    #   - RHO_EXCESS = core excess reactivity with NO rods inserted ($0.05)
+    #   - intRodWorth(S[9], 100) = rod worth from current position to fully withdrawn
+    #   - At h=100 (fully withdrawn): rho_rod = RHO_EXCESS - 0 = +$0.05
+    #   - At h=0 (fully inserted): rho_rod = RHO_EXCESS - $0.1 = -$0.05 (subcritical)
+    rho_rod = RHO_EXCESS - intRodWorth(S[9], 100.)
     
     # Xenon-135 poisoning reactivity (always negative)
     X = S[11]  # Xe-135 concentration

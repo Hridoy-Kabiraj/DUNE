@@ -298,7 +298,7 @@ class CalcFrame(gui.MyFrame1):
         self.duneReactor.togglePromptJumpMode(bool(self.promptCriticalToggle))
         if self.promptCriticalToggle:
             print("WARNING: Prompt Jump Mode ACTIVATED - Inserting ~$0.003 reactivity")
-            print("Control rod withdrawn instantly (rod position increased by 3%)")
+            print("Control rod withdrawn instantly (rod position increased by 6%)")
         else:
             print("Prompt Jump Mode DEACTIVATED")
 
