@@ -813,29 +813,26 @@ A: It should work but may be slow. The GUI is computationally intensive. Conside
 - Xenon oscillation studies and load-following scenarios
 - Enhanced parameter configuration UI
 - Pre-configured scenario library (startup, shutdown, load-follow, etc.)
-- Multi-zone burnup with radial/axial distribution
 - Enhanced documentation and video tutorials
 
 ## Authors
 
 **Hridoy Kabiraj**  
 Email: rudrokabiraj@gmail.com  
-GitHub: [@hridoy](https://github.com/Hridoy-Kabiraj)
+GitHub: [@hridoy](https://github.com/approx-infinity)
 
 **Original Developer: William Gurecky**
 
 ## License
 
-This project is currently unlicensed. All rights reserved by the author.
-
-For usage permissions or licensing inquiries, please contact the author.
+This project is currently under MIT license.
 
 ---
 
 ## Contact and Support
 
 For questions, bug reports, or feature requests:
-- Open an issue on [GitHub](https://github.com/hridoy/DUNE/issues)
+- Open an issue on GitHub
 - Email: rudrokabiraj@gmail.com
 
 For educational partnerships or collaboration inquiries, please reach out via email.
